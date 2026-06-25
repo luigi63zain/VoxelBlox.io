@@ -400,10 +400,20 @@
             <button class="close-modal-btn" onclick="toggleLinksModal(false)">X</button>
             <h3 class="modal-title">OFFICIAL LINKS</h3>
             <div class="links-grid">
+                <a href="https://luigi63zain.github.io/VoxelBlox.io/browser-extension.zip" download class="social-link-item" onclick="showExtensionGuide()">📥 DOWNLOAD CHROMIUM ADDON</a>
+                
                 <a href="https://www.youtube.com/@voxelblox-io" target="_blank" class="social-link-item">📺 YOUTUBE CHANNEL</a>
                 <a href="https://luigi64zain.itch.io/voxelblox-io" target="_blank" class="social-link-item">🎮 ITCH.IO VERSION</a>
                 <a href="https://github.com/luigi63zain/VoxelBlox.io" target="_blank" class="social-link-item">🐙 GITHUB REPOSITORY</a>
                 <a href="https://sites.google.com/view/voxelblox-io/home" target="_blank" class="social-link-item">🌐 GOOGLE SITES</a>
+            </div>
+
+            <div id="extension-instructions" style="display:none; margin-top:15px; padding:12px; background:#2a2a2a; border:2px dashed #ff9800; font-size:0.55rem; text-align:left; line-height:1.4; color:#aaa;">
+                <b style="color:#ff9800;">HOW TO INSTALL:</b><br>
+                1. Unzip the downloaded folder.<br>
+                2. Go to <span style="color:#fff;">chrome://extensions/</span> in your browser.<br>
+                3. Turn on <b style="color:#fff;">Developer Mode</b> (top right).<br>
+                4. Click <b style="color:#fff;">Load unpacked</b> (top left) and choose the folder!
             </div>
         </div>
     </div>
@@ -436,7 +446,15 @@
         // --- POPUP LINKS ROUTING LOGIC ---
         function toggleLinksModal(show) {
             document.getElementById('links-overlay').style.display = show ? 'flex' : 'none';
+            if (!show) {
+                document.getElementById('extension-instructions').style.display = 'none';
+            }
         }
+
+        function showExtensionGuide() {
+            document.getElementById('extension-instructions').style.display = 'block';
+        }
+
         function handleOverlayClick(e) {
             if (e.target === document.getElementById('links-overlay')) {
                 toggleLinksModal(false);
