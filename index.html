@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VoxelBlox.io - Voxel Spleef & Freebuild with Flight</title>
+    <title>VoxelBlox.io - Voxel Spleef & Freebuild</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -548,7 +548,7 @@
             
             if(currentActiveMode === 'spleef') {
                 document.getElementById("ui-username").innerText = "🏃 " + username.toUpperCase();
-                document.getElementById("ui-controls-desc").innerHTML = "WASD + Arrows to Move | F5 Camera<br>Double-Tap Space to Fly (Creative!)<br>Left Click to Break Blocks";
+                document.getElementById("ui-controls-desc").innerHTML = "WASD + Arrows to Move | F5 Camera<br>Left Click to Break Blocks";
                 document.getElementById("hotbar").style.display = "none";
                 document.getElementById("fail-title").innerText = "LAVA ELIMINATION";
             } else {
@@ -697,14 +697,16 @@
                 updateHotbarUI();
             }
             else if(e.key === ' ') {
-                // DOUBLE TAP DETECTION FOR FLIGHT MECHANIC
-                let now = performance.now();
-                if(now - lastJumpTapTime < 300) {
-                    isFlying = !isFlying;
-                    playerVelocityY = 0;
-                    playFlySound();
+                // DOUBLE TAP DETECTION FOR FLIGHT MECHANIC (ONLY IN FREEBUILD)
+                if (currentActiveMode === 'freebuild') {
+                    let now = performance.now();
+                    if(now - lastJumpTapTime < 300) {
+                        isFlying = !isFlying;
+                        playerVelocityY = 0;
+                        playFlySound();
+                    }
+                    lastJumpTapTime = now;
                 }
-                lastJumpTapTime = now;
                 keys[' '] = 1;
             }
             else if(k === 'shift') keys['shift'] = 1;
