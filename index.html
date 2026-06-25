@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoxelBlox.io - Voxel Spleef & Freebuild with Flight</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    
+    <style>
+        @font-face {
+            font-family: 'pixel-game';
+            src: local('pixel-game'), local('Pixel Game');
+        }
+
+        html, body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'pixel-game', 'Press Start 2P', sans-serif;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        #lobby-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            display: flex;
+            gap: 30px;
+            max-width: 950px;
+            width: 100%;
+        }
+
+        .panel {
+            background-color: #1e1e1e;
+            border: 4px solid #ff9800;
+            border-radius: 4px;
+            padding: 25px;
+        }
+
+        .left-panel { 
+            flex: 1; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .right-panel { 
+            flex: 1.2; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between;
+        }
+
+        #canvas3d {
+            width: 280px;
+            height: 340px;
+            background-color: #2a2a2a;
+            border: 3px solid #ff9800;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            cursor: grab;
+        }
+
+        h1 { color: #ff9800; margin-top: 0; font-size: 2.2rem; text-shadow: 3px 3px #000; letter-spacing: 1px; }
+        h2 { color: #ff9800; margin-top: 0; font-size: 1.1rem; }
+        
+        .custom-group {
+            margin-bottom: 12px;
+            width: 100%;
+        }
+
+        .custom-group label {
+            display: block;
+            font-size: 0.7rem;
+            color: #aaaaaa;
+            margin-bottom: 5px;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 8px;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 10px;
+            background-color: #2a2a2a;
+            color: white;
+            border: 3px solid #3a3a3a;
+            font-size: 0.75rem;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus, select:focus { border-color: #ff9800; outline: none; }
+
+        .dice-btn {
+            background-color: #3a3a3a;
+            color: white;
+            border: 3px solid #555;
+            padding: 0 10px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .dice-btn:hover { background-color: #ff9800; color: black; border-color: #ff9800; }
+
+        .arcade-hub { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
+
+        .game-card {
+            background-color: #2a2a2a;
+            border: 3px solid #3a3a3a;
+            padding: 15px;
+            cursor: pointer;
+        }
+
+        .game-card.active { border-color: #ff9800; background-color: #35240e; }
+        .game-card.active h3 { color: #ff9800; }
+        .game-card h3 { margin: 0; font-size: 1.1rem; }
+        .game-card p { margin: 5px 0 0 0; font-size: 0.6rem; color: #aaa; line-height: 1.3; }
+
+        .launch-btn {
+            background-color: #ff9800;
+            color: #000;
+            border: none;
+            padding: 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            font-family: inherit;
+            box-shadow: 0 5px 0 #b36600;
+        }
+
+        .launch-btn:hover { background-color: #e65100; color: #fff; box-shadow: 0 5px 0 #802c00; }
+
+        #game-stage {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        #game-ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            text-shadow: 2px 2px #000;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        #game-ui h2 { margin: 0; color: #fff; font-size: 1.3rem; }
+        #game-ui p { margin: 8px 0 0 0; color: #ff9800; font-size: 0.65rem; line-height: 1.5; }
+
+        /* Creative Inventory Hotbar Layer */
+        #hotbar {
+            display: none;
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 30, 30, 0.85);
+            border: 4px solid #3a3a3a;
+            padding: 6px;
+            gap: 8px;
+            z-index: 15;
+            pointer-events: none;
+        }
+
+        .hotbar-slot {
+            width: 50px;
+            height: 50px;
+            background: #2a2a2a;
+            border: 3px solid #555;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.5rem;
+            text-align: center;
+            color: #fff;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .hotbar-slot.active {
+            border-color: #ff9800;
+            background: #473216;
+        }
+
+        .hotbar-key {
+            position: absolute;
+            top: 2px;
+            left: 4px;
+            color: #ff9800;
+            font-weight: bold;
+            font-size: 0.5rem;
+        }
+
+        .slot-icon {
+            width: 16px;
+            height: 16px;
+            margin-bottom: 2px;
+            border-radius: 2px;
+        }
+
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 10px;
+            height: 10px;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 10;
+        }
+        #crosshair::before, #crosshair::after {
+            content: '';
+            position: absolute;
+            background: white;
+        }
+        #crosshair::before { top: 4px; left: -5px; width: 20px; height: 2px; }
+        #crosshair::after { top: -5px; left: 4px; width: 2px; height: 20px; }
+
+        #pointer-alert {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0,0,0,0.85);
+            border: 3px solid #ff9800;
+            padding: 12px;
+            font-size: 0.6rem;
+            color: #fff;
+            max-width: 280px;
+            z-index: 40;
+            display: none;
+            pointer-events: auto;
+            line-height: 1.4;
+        }
+
+        #game-over-screen {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 0, 0, 0.35);
+            backdrop-filter: blur(4px);
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+        }
+
+        #game-over-screen h1 { font-size: 2.2rem; color: #fff; margin: 0; text-shadow: 4px 4px #000; }
+
+        .action-btn {
+            background-color: #ffffff;
+            color: #000000;
+            border: none;
+            padding: 12px 30px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            pointer-events: auto;
+            font-family: inherit;
+            box-shadow: 0 5px 0 #aaaaaa;
+        }
+        .action-btn:hover { background-color: #ff9800; box-shadow: 0 5px 0 #b36600; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+
+    <div id="lobby-screen">
+        <div class="container">
+            <div class="panel left-panel">
+                <h2>PLAYER PREVIEW</h2>
+                <div id="canvas3d"></div>
+                <div class="custom-group">
+                    <label>USERNAME</label>
+                    <div class="input-container">
+                        <input type="text" id="username-input" maxlength="20">
+                        <button class="dice-btn" onclick="randomizeAll()">🎲</button>
+                    </div>
+                </div>
+                <div class="custom-group">
+                    <label>CHARACTER STYLE</label>
+                    <select id="gender-select" onchange="updateHairStyle()">
+                        <option value="boy">Boy (Unified Stair Cut)</option>
+                        <option value="girl">Girl (Extended 3D Hair)</option>
+                    </select>
+                </div>
+                <div class="custom-group">
+                    <label>EYE COLOR</label>
+                    <select id="eye-select" onchange="updateEyeColor()">
+                        <option value="#000000">Black</option>
+                        <option value="#2e7d32">Green</option>
+                        <option value="#1565c0">Blue</option>
+                        <option value="#5d4037">Brown</option>
+                        <option value="#ad1457">Purple</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="panel right-panel">
+                <div>
+                    <h1>VOXELBLOX.IO</h1>
+                    <p style="color: #aaa; margin-top: -10px; font-size: 0.65rem; line-height: 1.4;">Select your game mode, personalize your avatar, and deploy into the match.</p>
+                    
+                    <div class="arcade-hub">
+                        <div class="game-card active" id="card-spleef" onclick="selectMode('spleef')">
+                            <h3>SPLEEF MATCH</h3>
+                            <p>Multi-layered voxel competitive survival drop against active bots.</p>
+                        </div>
+                        <div class="game-card" id="card-freebuild" onclick="selectMode('freebuild')">
+                            <h3>FREEBUILD MODE</h3>
+                            <p>No bots. Flat endless world with inventory switching & brick placing.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="custom-group" id="difficulty-box" style="margin-top: 20px;">
+                        <label style="color: #ff9800;">BOT DIFFICULTY</label>
+                        <select id="difficulty-select">
+                            <option value="easy">Easy (Casual Bots)</option>
+                            <option value="medium" selected>Medium (Standard)</option>
+                            <option value="hardcore">Hardcore (Aggressive)</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="launch-btn" onclick="launchGame()">LAUNCH GAME</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-stage">
+        <div id="pointer-alert">
+            <b>🔒 MOUSE RESTRAINED:</b> Click the map or use the <b>ARROW KEYS</b> to turn around if your mouse cursor isn't locking properly.
+        </div>
+        <div id="crosshair"></div>
+        <div id="game-ui">
+            <h2 id="ui-username">Player</h2>
+            <p id="ui-controls-desc">WASD + Arrow Keys to Move/Look<br>Ctrl Sprint | Shift Sneak | F5 Camera</p>
+        </div>
+
+        <div id="hotbar">
+            <div class="hotbar-slot active" id="slot-1"><span class="hotbar-key">1</span><div class="slot-icon" style="background:#ffffff;"></div>SNOW</div>
+            <div class="hotbar-slot" id="slot-2"><span class="hotbar-key">2</span><div class="slot-icon" style="background:#cd853f;"></div>PLANK</div>
+            <div class="hotbar-slot" id="slot-3"><span class="hotbar-key">3</span><div class="slot-icon" style="background:#8b5a2b;"></div>LOG</div>
+            <div class="hotbar-slot" id="slot-4"><span class="hotbar-key">4</span><div class="slot-icon" style="background:#556b2f;"></div>GRASS</div>
+            <div class="hotbar-slot" id="slot-5"><span class="hotbar-key">5</span><div class="slot-icon" style="background:#8b4513;"></div>DIRT</div>
+        </div>
+
+        <div id="game-over-screen">
+            <h1 id="fail-title">LAVA ELIMINATION</h1>
+            <button class="action-btn" onclick="restartSpleefGame()">PLAY AGAIN</button>
+        </div>
+    </div>
+
+    <script>
+        // --- GAMEMODE ROUTER ---
+        let currentActiveMode = 'spleef'; // 'spleef' or 'freebuild'
+
+        function selectMode(mode) {
+            currentActiveMode = mode;
+            document.getElementById('card-spleef').classList.remove('active');
+            document.getElementById('card-freebuild').classList.remove('active');
+            
+            if (mode === 'spleef') {
+                document.getElementById('card-spleef').classList.add('active');
+                document.getElementById('difficulty-box').style.display = 'block';
+            } else {
+                document.getElementById('card-freebuild').classList.add('active');
+                document.getElementById('difficulty-box').style.display = 'none';
+            }
+        }
+
+        // --- CUSTOM WEB AUDIO SYNTHESIZER ENGINE ---
+        let audioCtx = null;
+        function initAudio() { if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } }
+
+        function playTone(type, startFreq, endFreq, duration, volume = 0.1) {
+            if (!audioCtx) return;
+            let osc = audioCtx.createOscillator();
+            let gainNode = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(startFreq, audioCtx.currentTime);
+            if (endFreq !== startFreq) osc.frequency.exponentialRampToValueAtTime(endFreq, audioCtx.currentTime + duration);
+            gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+            osc.connect(gainNode); gainNode.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function playJumpSound() { playTone('triangle', 150, 400, 0.15, 0.15); }
+        function playFlySound() { playTone('sine', 300, 450, 0.12, 0.12); }
+        function playBreakSound() { playTone('sawtooth', 120, 40, 0.08, 0.08); }
+        function playBuildSound() { playTone('sine', 180, 260, 0.06, 0.2); }
+        function playLavaSound() { playTone('sawtooth', 200, 20, 0.8, 0.3); }
+
+        // --- THREE.JS CONFIG & ASSETS ---
+        const skinMat = new THREE.MeshLambertMaterial({ color: 0xf5cba7 });
+        const hairMat = new THREE.MeshLambertMaterial({ color: 0x3e2723 });
+        const suitMat = new THREE.MeshLambertMaterial({ color: 0x555555 });
+        const pantsMat = new THREE.MeshLambertMaterial({ color: 0x212121 });
+        const whiteEyeMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
+        const pupilMat = new THREE.MeshLambertMaterial({ color: 0x000000 });
+        
+        const blockGeo = new THREE.BoxGeometry(1.98, 1.98, 1.98);
+
+        // Block Materials definitions for Freebuild Mode
+        const materialsMap = {
+            snow: new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0x222222 }),
+            wood: new THREE.MeshLambertMaterial({ color: 0xcd853f }),
+            log: new THREE.MeshLambertMaterial({ color: 0x8b5a2b }),
+            grass: new THREE.MeshLambertMaterial({ color: 0x556b2f }),
+            dirt: new THREE.MeshLambertMaterial({ color: 0x8b4513 })
+        };
+        const hotbarBlockTypes = ['snow', 'wood', 'log', 'grass', 'dirt'];
+        let selectedBlockIndex = 0; // default snow
+
+        function buildFullCharacterMesh(targetGroup, chosenStyle, customHairMat, customPupilMat, customSuitMat) {
+            const hMat = customHairMat || hairMat;
+            const pMat = customPupilMat || pupilMat;
+            const sMat = customSuitMat || suitMat;
+
+            const headJoint = new THREE.Group();
+            headJoint.position.y = 2.3; headJoint.name = "headJoint"; 
+            
+            const headMesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), skinMat);
+            headJoint.add(headMesh);
+
+            const torsoMesh = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 0.6), sMat); torsoMesh.position.y = 1.1;
+            const legsMesh = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.0, 0.5), pantsMat); legsMesh.position.y = 0.0;
+            targetGroup.add(headJoint, torsoMesh, legsMesh);
+
+            const leftWhite = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.12, 0.02), whiteEyeMat); leftWhite.position.set(-0.18, 0, -0.505);
+            const leftPupil = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.03), pMat); leftPupil.position.set(-0.18, 0, -0.51);
+            const rightWhite = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.12, 0.02), whiteEyeMat); rightWhite.position.set(0.18, 0, -0.505);
+            const rightPupil = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.03), pMat); rightPupil.position.set(0.18, 0, -0.51);
+            headJoint.add(leftWhite, leftPupil, rightWhite, rightPupil);
+
+            const hairGroup = new THREE.Group(); headMesh.add(hairGroup);
+            if(chosenStyle === 'girl') {
+                const topCap = new THREE.Mesh(new THREE.BoxGeometry(1.06, 0.3, 1.06), hMat); topCap.position.set(0, 0.4, 0);
+                const bangs = new THREE.Mesh(new THREE.BoxGeometry(1.06, 0.2, 0.2), hMat); bangs.position.set(0, 0.25, -0.44); 
+                const sL = new THREE.Mesh(new THREE.BoxGeometry(0.05, 1.2, 1.06), hMat); sL.position.set(-0.51, -0.3, 0);
+                const sR = new THREE.Mesh(new THREE.BoxGeometry(0.05, 1.2, 1.06), hMat); sR.position.set(0.51, -0.3, 0);
+                hairGroup.add(topCap, bangs, sL, sR);
+            } else {
+                const step1 = new THREE.Mesh(new THREE.BoxGeometry(1.06, 0.2, 1.06), hMat); step1.position.set(0, 0.48, 0);
+                const step2 = new THREE.Mesh(new THREE.BoxGeometry(1.06, 0.2, 1.06), hMat); step2.position.set(0, 0.28, 0.02);
+                const step3 = new THREE.Mesh(new THREE.BoxGeometry(1.06, 0.2, 0.6), hMat); step3.position.set(0, 0.08, 0.25);
+                const step4 = new THREE.Mesh(new THREE.BoxGeometry(1.06, 0.15, 0.3), hMat); step4.position.set(0, -0.1, 0.4);
+                hairGroup.add(step1, step2, step3, step4);
+            }
+        }
+
+        function createNametagSprite(nameString, labelColor) {
+            const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.65)'; ctx.fillRect(32, 24, 448, 80);
+            ctx.font = 'bold 24px "pixel-game", "Press Start 2P", sans-serif';
+            ctx.fillStyle = labelColor; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(nameString.toUpperCase(), 256, 64);
+            const texture = new THREE.CanvasTexture(canvas);
+            const spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true });
+            const sprite = new THREE.Sprite(spriteMat); sprite.scale.set(3.5, 0.875, 1); return sprite;
+        }
+
+        const adjectives = ["EPIC", "MEGA", "SHADOW", "NEON", "SWIFT", "FROST", "VOXEL", "HYPER"];
+        const nouns = ["KNIGHT", "NINJA", "BEAST", "RUNNER", "VIPER", "GHOST", "CRAFT", "GAMER"];
+        function makeRandomUsername() { return adjectives[Math.floor(Math.random() * adjectives.length)] + nouns[Math.floor(Math.random() * nouns.length)] + Math.floor(100 + Math.random() * 899); }
+
+        function randomizeAll() {
+            document.getElementById("username-input").value = makeRandomUsername();
+            updateHairStyle(); updateEyeColor();
+        }
+
+        const container = document.getElementById('canvas3d');
+        const lobbyScene = new THREE.Scene();
+        const lobbyCamera = new THREE.PerspectiveCamera(45, 280 / 340, 0.1, 1000); lobbyCamera.position.set(0, 1.2, 4.6);
+        const lobbyRenderer = new THREE.WebGLRenderer({ antialias: false }); lobbyRenderer.setSize(280, 340); container.appendChild(lobbyRenderer.domElement);
+        const lobbyControls = new THREE.OrbitControls(lobbyCamera, lobbyRenderer.domElement); lobbyControls.enableZoom = true; lobbyControls.enablePan = false; lobbyControls.minDistance = 2.0; lobbyControls.maxDistance = 8.0; lobbyControls.target.set(0, 1.0, 0);
+        
+        const dLight = new THREE.DirectionalLight(0xffffff, 0.75); dLight.position.set(2, 4, 4);
+        lobbyScene.add(dLight, new THREE.AmbientLight(0x555555));
+        const previewGroup = new THREE.Group(); lobbyScene.add(previewGroup);
+
+        function updateHairStyle() {
+            while(previewGroup.children.length > 0) { previewGroup.remove(previewGroup.children[0]); }
+            buildFullCharacterMesh(previewGroup, document.getElementById('gender-select').value, hairMat, pupilMat, suitMat);
+            previewGroup.rotation.y = Math.PI; 
+        }
+        function updateEyeColor() { pupilMat.color.set(document.getElementById('eye-select').value); }
+        randomizeAll();
+        function animLobby() { requestAnimationFrame(animLobby); lobbyControls.update(); lobbyRenderer.render(lobbyScene, lobbyCamera); }
+        animLobby();
+
+        // --- CORE GAME ENGINE WORLD VARIABLES ---
+        let gameScene, gameCamera, gameRenderer;
+        let blocks = [];
+        let npcs = []; 
+        let isGameOver = false;
+        let selectedDifficulty = "medium";
+        const arenaSize = 21; 
+
+        let yaw = 0, pitch = 0;
+        const mouseSensitivity = 0.002, keyboardTurnSpeed = 0.035;
+
+        let playerPos = new THREE.Vector3(0, 5.0, 0); 
+        let playerVelocityY = 0;
+        let isPlayerOnGround = false;
+        let isFlying = false; // Flight toggle state tracker
+        let lastJumpTapTime = 0; // Double tap timer tracking
+        const gravity = -0.012, jumpForce = 0.22, cameraEyeHeight = 1.8; 
+
+        let playerVisualGroup;
+        let isSprintingToggled = false, isThirdPerson = false;
+        let keys = { w:0, a:0, s:0, d:0, ' ':0, shift:0, arrowleft:0, arrowright:0, arrowup:0, arrowdown:0 };
+
+        const raycaster = new THREE.Raycaster();
+        const centerMouse = new THREE.Vector2(0, 0);
+
+        function launchGame() {
+            initAudio();
+            selectedDifficulty = document.getElementById("difficulty-select").value;
+            const username = document.getElementById("username-input").value || "GAMER";
+            
+            if(currentActiveMode === 'spleef') {
+                document.getElementById("ui-username").innerText = "🏃 " + username.toUpperCase();
+                document.getElementById("ui-controls-desc").innerHTML = "WASD + Arrows to Move | F5 Camera<br>Double-Tap Space to Fly (Creative!)<br>Left Click to Break Blocks";
+                document.getElementById("hotbar").style.display = "none";
+                document.getElementById("fail-title").innerText = "LAVA ELIMINATION";
+            } else {
+                document.getElementById("ui-username").innerText = "🛠️ " + username.toUpperCase() + " (FREEBUILD)";
+                document.getElementById("ui-controls-desc").innerHTML = "WASD + Arrows to Move | F5 Camera<br>Double-Tap Space to Fly | Keys 1-5 to Swap Blocks<br>Left Click: Break | Right Click: Place";
+                document.getElementById("hotbar").style.display = "flex";
+                document.getElementById("fail-title").innerText = "FELL OFF WORLD";
+                updateHotbarUI();
+            }
+
+            document.getElementById("lobby-screen").style.display = "none";
+            document.getElementById("game-stage").style.display = "block";
+            document.getElementById("pointer-alert").style.display = "block";
+
+            const stage = document.getElementById("game-stage");
+            stage.requestPointerLock = stage.requestPointerLock || stage.mozRequestPointerLock;
+            setTimeout(() => { stage.requestPointerLock(); }, 300);
+
+            initSpleefWorld();
+        }
+
+        function updateHotbarUI() {
+            for(let i=1; i<=5; i++) {
+                document.getElementById("slot-"+i).classList.remove("active");
+            }
+            document.getElementById("slot-" + (selectedBlockIndex + 1)).classList.add("active");
+        }
+
+        function initSpleefWorld() {
+            isGameOver = false; blocks = []; npcs = []; yaw = 0; pitch = 0;
+            isSprintingToggled = false; isThirdPerson = false; isFlying = false;
+            playerPos.set(0, 6.0, 0); playerVelocityY = 0; isPlayerOnGround = false;
+            document.getElementById("game-over-screen").style.display = "none";
+
+            gameScene = new THREE.Scene();
+            gameScene.background = new THREE.Color(0x0f141d);
+            gameScene.fog = new THREE.FogExp2(0x0f141d, 0.015);
+
+            gameCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            gameRenderer = new THREE.WebGLRenderer({ antialias: false });
+            gameRenderer.setSize(window.innerWidth, window.innerHeight);
+            
+            const canvasContainer = document.getElementById("game-stage");
+            const oldCanvas = canvasContainer.querySelector('canvas');
+            if(oldCanvas) canvasContainer.removeChild(oldCanvas);
+            canvasContainer.appendChild(gameRenderer.domElement);
+
+            const ambient = new THREE.AmbientLight(0x777777);
+            const sun = new THREE.DirectionalLight(0xffffff, 0.85); sun.position.set(20, 50, 25);
+            gameScene.add(ambient, sun);
+
+            playerVisualGroup = new THREE.Group();
+            const customPupil = new THREE.MeshLambertMaterial({ color: document.getElementById('eye-select').value });
+            buildFullCharacterMesh(playerVisualGroup, document.getElementById('gender-select').value, hairMat, customPupil, suitMat);
+            playerVisualGroup.scale.set(0.9, 0.9, 0.9);
+            gameScene.add(playerVisualGroup);
+
+            let half = Math.floor(arenaSize / 2);
+
+            if (currentActiveMode === 'spleef') {
+                // Spleef Arena setup (3 spaced layers)
+                const layerColors = [0xffffff, 0xddf2ff, 0x99ccff]; 
+                const layerEmissive = [0x222222, 0x112233, 0x002244];
+                const yOffsets = [2, -4, -10]; 
+
+                for (let layer = 0; layer < 3; layer++) {
+                    const layerMat = new THREE.MeshLambertMaterial({ color: layerColors[layer], emissive: layerEmissive[layer] });
+                    for(let x = -half; x <= half; x++) {
+                        for(let z = -half; z <= half; z++) {
+                            const tile = new THREE.Mesh(blockGeo, layerMat);
+                            tile.position.set(x * 2, yOffsets[layer], z * 2);
+                            gameScene.add(tile); blocks.push(tile);
+                        }
+                    }
+                }
+
+                // NPC Deployment (Spleef Only)
+                const randomHairColors = [0x3e2723, 0x1a0c00, 0xd7ccc8, 0xffb74d, 0xe0a96d];
+                const randomEyeColors = [0x1565c0, 0x2e7d32, 0x5d4037, 0x000000];
+                const randomSuitColors = [0xe91e63, 0x9c27b0, 0x00e676, 0x3f51b5, 0x00bcd4];
+
+                for (let i = 0; i < 5; i++) {
+                    const npcGroup = new THREE.Group();
+                    const nHairMat = new THREE.MeshLambertMaterial({ color: randomHairColors[Math.floor(Math.random() * randomHairColors.length)] });
+                    const nPupilMat = new THREE.MeshLambertMaterial({ color: randomEyeColors[Math.floor(Math.random() * randomEyeColors.length)] });
+                    const nSuitMat = new THREE.MeshLambertMaterial({ color: randomSuitColors[Math.floor(Math.random() * randomSuitColors.length)] });
+
+                    buildFullCharacterMesh(npcGroup, Math.random() > 0.5 ? 'boy' : 'girl', nHairMat, nPupilMat, nSuitMat);
+                    
+                    const nameSprite = createNametagSprite(makeRandomUsername(), "#ffffff");
+                    nameSprite.position.set(0, 3.2, 0); npcGroup.add(nameSprite);
+                    npcGroup.scale.set(0.9, 0.9, 0.9);
+
+                    let spawnX = (Math.random() * (arenaSize - 2) - half) * 2;
+                    let spawnZ = (Math.random() * (arenaSize - 2) - half) * 2;
+                    npcGroup.position.set(spawnX, 5.0, spawnZ); 
+                    gameScene.add(npcGroup);
+                    
+                    const walkDir = new THREE.Vector3((Math.random() - 0.5), 0, (Math.random() - 0.5)).normalize();
+                    npcGroup.lookAt(npcGroup.position.clone().add(walkDir)); npcGroup.rotateY(Math.PI); 
+
+                    npcs.push({
+                        mesh: npcGroup, dir: walkDir, changeDirTimer: 0,
+                        breakTimer: Math.random() * 10, velocityY: 0, isOnGround: true,
+                        personality: Math.random() > 0.4 ? 'hunter' : 'runaway', targetPitch: 0
+                    });
+                }
+            } else {
+                // Freebuild Mode setup: Flat Grass Terrain map
+                const flatSize = 31; // Slightly larger for construction area
+                let fHalf = Math.floor(flatSize / 2);
+                for(let x = -fHalf; x <= fHalf; x++) {
+                    for(let z = -fHalf; z <= fHalf; z++) {
+                        const grassTile = new THREE.Mesh(blockGeo, materialsMap.grass);
+                        grassTile.position.set(x * 2, 0, z * 2);
+                        gameScene.add(grassTile); blocks.push(grassTile);
+                    }
+                }
+            }
+
+            // Toxic Lava base
+            const lavaGeo = new THREE.PlaneGeometry(550, 550);
+            const lavaMat = new THREE.MeshBasicMaterial({ color: currentActiveMode === 'freebuild' ? 0x050811 : 0xff2200, side: THREE.DoubleSide });
+            const lava = new THREE.Mesh(lavaGeo, lavaMat);
+            lava.rotation.x = Math.PI / 2; lava.position.y = -18;
+            gameScene.add(lava);
+
+            // Listeners Configuration
+            window.removeEventListener('keydown', handleKeyDown); window.addEventListener('keydown', handleKeyDown);
+            window.removeEventListener('keyup', handleKeyUp); window.addEventListener('keyup', handleKeyUp);
+            document.removeEventListener('mousemove', handleMouseMove); document.addEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('resize', onWindowResize); window.addEventListener('resize', onWindowResize);
+            
+            // Pointer actions split for Right Click building support
+            window.removeEventListener('mousedown', handleMouseDown); window.addEventListener('mousedown', handleMouseDown);
+
+            runGameLoop();
+        }
+
+        function handleKeyDown(e) { 
+            let k = e.key.toLowerCase();
+            if(k === 'control') { e.preventDefault(); isSprintingToggled = !isSprintingToggled; }
+            else if(e.key === 'F5' || k === 'f5') { e.preventDefault(); isThirdPerson = !isThirdPerson; }
+            else if(['1','2','3','4','5'].includes(k) && currentActiveMode === 'freebuild') {
+                selectedBlockIndex = parseInt(k) - 1;
+                updateHotbarUI();
+            }
+            else if(e.key === ' ') {
+                // DOUBLE TAP DETECTION FOR FLIGHT MECHANIC
+                let now = performance.now();
+                if(now - lastJumpTapTime < 300) {
+                    isFlying = !isFlying;
+                    playerVelocityY = 0;
+                    playFlySound();
+                }
+                lastJumpTapTime = now;
+                keys[' '] = 1;
+            }
+            else if(k === 'shift') keys['shift'] = 1;
+            else if(k in keys) {
+                if(k.startsWith('arrow')) e.preventDefault();
+                keys[k] = 1; 
+            }
+        }
+        
+        function handleKeyUp(e) { 
+            let k = e.key.toLowerCase();
+            if(k === 'shift') keys['shift'] = 0;
+            else if(k in keys || e.key === ' ') keys[e.key === ' ' ? ' ' : k] = 0; 
+        }
+
+        function handleMouseMove(e) {
+            if (document.pointerLockElement !== document.getElementById("game-stage") || isGameOver) return;
+            yaw -= e.movementX * mouseSensitivity;
+            pitch -= e.movementY * mouseSensitivity;
+            pitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, pitch));
+        }
+
+        function handleMouseDown(e) {
+            if(document.pointerLockElement !== document.getElementById("game-stage")) {
+                if(!isGameOver) document.getElementById("game-stage").requestPointerLock();
+                return;
+            }
+            if(isGameOver) return;
+
+            raycaster.setFromCamera(centerMouse, gameCamera);
+            raycaster.far = 16; 
+            const intersects = raycaster.intersectObjects(blocks);
+
+            if(e.button === 0) {
+                // LEFT CLICK: Break block
+                if(intersects.length > 0) {
+                    const targetedTile = intersects[0].object;
+                    gameScene.remove(targetedTile);
+                    blocks = blocks.filter(b => b !== targetedTile);
+                    playBreakSound();
+                }
+            } else if(e.button === 2 && currentActiveMode === 'freebuild') {
+                // RIGHT CLICK: Build voxel block (Freebuild only)
+                if(intersects.length > 0) {
+                    const targetBlock = intersects[0].object;
+                    const normal = intersects[0].face.normal.clone();
+                    
+                    // Derive next aligned structural box point based on hit grid face vector
+                    let buildX = targetBlock.position.x + (normal.x * 2);
+                    let buildY = targetBlock.position.y + (normal.y * 2);
+                    let buildZ = targetBlock.position.z + (normal.z * 2);
+
+                    // Prevent spawning directly inside players body space
+                    let distToPlayer = playerPos.distanceTo(new THREE.Vector3(buildX, playerPos.y, buildZ));
+                    if(distToPlayer < 1.2 && Math.abs(buildY - playerPos.y) < 1.5) return;
+
+                    const activeMatName = hotbarBlockTypes[selectedBlockIndex];
+                    const activeMat = materialsMap[activeMatName];
+                    
+                    const newBlock = new THREE.Mesh(blockGeo, activeMat);
+                    newBlock.position.set(buildX, buildY, buildZ);
+                    gameScene.add(newBlock);
+                    blocks.push(newBlock);
+                    playBuildSound();
+                }
+            }
+        }
+
+        // Prevent browser right click context box interference
+        window.addEventListener('contextmenu', e => e.preventDefault());
+
+        function onWindowResize() {
+            gameCamera.aspect = window.innerWidth / window.innerHeight;
+            gameCamera.updateProjectionMatrix();
+            gameRenderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function runGameLoop() {
+            if (isGameOver) return;
+            requestAnimationFrame(runGameLoop);
+
+            if (keys.arrowleft) yaw += keyboardTurnSpeed;
+            if (keys.arrowright) yaw -= keyboardTurnSpeed;
+            if (keys.arrowup) pitch += keyboardTurnSpeed * 0.7;
+            if (keys.arrowdown) pitch -= keyboardTurnSpeed * 0.7;
+            pitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, pitch));
+
+            let currentMoveSpeed = isFlying ? 0.16 : 0.08; 
+            if (isSprintingToggled) currentMoveSpeed *= 1.5; 
+            else if (keys.shift && !isFlying) currentMoveSpeed = 0.038; 
+
+            const forward = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+            const right = new THREE.Vector3(1, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+
+            let moveDir = new THREE.Vector3();
+            if (keys.w) moveDir.add(forward); if (keys.s) moveDir.add(forward.clone().negate());
+            if (keys.d) moveDir.add(right); if (keys.a) moveDir.add(right.clone().negate());
+            
+            if (moveDir.lengthSq() > 0) {
+                moveDir.normalize();
+                let nextPos = playerPos.clone().addScaledVector(moveDir, currentMoveSpeed);
+
+                if (keys.shift && isPlayerOnGround && !isFlying) {
+                    let nextTileValid = false;
+                    for (let b of blocks) {
+                        if (Math.abs(b.position.x - nextPos.x) < 1.05 && Math.abs(b.position.z - nextPos.z) < 1.05) {
+                            if (Math.abs((b.position.y + 1.0) - playerPos.y) < 0.2) { nextTileValid = true; break; }
+                        }
+                    }
+                    if (nextTileValid) playerPos.copy(nextPos);
+                } else {
+                    playerPos.copy(nextPos);
+                }
+            }
+
+            // --- Y AXIS MOVEMENT ENGINE ---
+            if (isFlying) {
+                // Smooth airborne velocity manipulation when flying
+                let flyVerticalSpeed = 0.12;
+                if (keys[' ']) playerPos.y += flyVerticalSpeed;
+                if (keys['shift']) playerPos.y -= flyVerticalSpeed;
+                playerVelocityY = 0;
+            } else {
+                // Normal gravity processing logic
+                playerVelocityY += gravity; 
+                playerPos.y += playerVelocityY;
+            }
+
+            let standingOnTile = false; let currentFloorY = -30; 
+
+            for(let b of blocks) {
+                if(Math.abs(b.position.x - playerPos.x) < 1.1 && Math.abs(b.position.z - playerPos.z) < 1.1) {
+                    let surfaceHeight = b.position.y + 1.0; 
+                    if (playerPos.y >= surfaceHeight - 0.35 && playerPos.y + playerVelocityY <= surfaceHeight + 0.15) {
+                        if (surfaceHeight > currentFloorY) { currentFloorY = surfaceHeight; standingOnTile = true; }
+                    }
+                }
+            }
+
+            if(standingOnTile && playerVelocityY <= 0) {
+                playerPos.y = currentFloorY; 
+                playerVelocityY = 0; 
+                isPlayerOnGround = true;
+                if (isFlying) isFlying = false; // Turn off flying automatically upon touching down safely
+            } else { 
+                isPlayerOnGround = false; 
+            }
+
+            if (keys[' '] && isPlayerOnGround && !isFlying) { playerVelocityY = jumpForce; isPlayerOnGround = false; playJumpSound(); }
+
+            // Death floor checking boundary limits
+            if(playerPos.y < -16.0) {
+                isGameOver = true; if(currentActiveMode === 'spleef') playLavaSound();
+                document.exitPointerLock(); document.getElementById("game-over-screen").style.display = "flex";
+            }
+
+            playerVisualGroup.position.copy(playerPos); playerVisualGroup.rotation.y = yaw; playerVisualGroup.visible = isThirdPerson;
+            const playerHead = playerVisualGroup.getObjectByName("headJoint");
+            if (playerHead) playerHead.rotation.x = pitch; 
+
+            // --- BOT ENGINE (Spleef mode Only processing loop) ---
+            if(currentActiveMode === 'spleef') {
+                for(let i = npcs.length - 1; i >= 0; i--) {
+                    let npc = npcs[i]; npc.velocityY += gravity; npc.mesh.position.y += npc.velocityY;
+                    let npcFloorY = -20; let npcStandingValid = false;
+
+                    for(let b of blocks) {
+                        if(Math.abs(b.position.x - npc.mesh.position.x) < 1.1 && Math.abs(b.position.z - npc.mesh.position.z) < 1.1) {
+                            let surfY = b.position.y + 1.0; 
+                            if (npc.mesh.position.y >= surfY - 0.35 && npc.mesh.position.y + npc.velocityY <= surfY + 0.15) {
+                                if (surfY > npcFloorY) { npcFloorY = surfY; npcStandingValid = true; }
+                            }
+                        }
+                    }
+
+                    if(npcStandingValid && npc.velocityY <= 0) { npc.mesh.position.y = npcFloorY; npc.velocityY = 0; npc.isOnGround = true; }
+                    else { npc.isOnGround = false; }
+
+                    let distanceToPlayer = npc.mesh.position.distanceTo(playerPos);
+                    let heightDiff = Math.abs(npc.mesh.position.y - playerPos.y);
+                    let trackRange = selectedDifficulty === "hardcore" ? 28 : (selectedDifficulty === "medium" ? 24 : 16);
+                    let isTrackingActive = (heightDiff < 8.0 && distanceToPlayer < trackRange);
+
+                    if (isTrackingActive) {
+                        if (npc.personality === 'hunter') { npc.dir.copy(playerPos).sub(npc.mesh.position); }
+                        else { npc.dir.copy(npc.mesh.position).sub(playerPos); }
+                        let horizontalDist = Math.sqrt(npc.dir.x * npc.dir.x + npc.dir.z * npc.dir.z);
+                        npc.targetPitch = Math.atan2(playerPos.y - npc.mesh.position.y, horizontalDist);
+                        npc.dir.y = 0; npc.dir.normalize();
+                    } else {
+                        npc.targetPitch = 0; npc.changeDirTimer++;
+                        let routeRate = selectedDifficulty === "hardcore" ? 60 : 120;
+                        if(npc.changeDirTimer > routeRate) { npc.dir.set((Math.random() - 0.5), 0, (Math.random() - 0.5)).normalize(); npc.changeDirTimer = 0; }
+                    }
+
+                    if (npc.dir.lengthSq() > 0) { npc.mesh.lookAt(npc.mesh.position.clone().add(npc.dir)); npc.mesh.rotateY(Math.PI); }
+                    const botHead = npc.mesh.getObjectByName("headJoint");
+                    if (botHead) botHead.rotation.x += (npc.targetPitch - botHead.rotation.x) * 0.1;
+
+                    let checkAheadX = npc.mesh.position.x + (npc.dir.x * 1.8);
+                    let checkAheadZ = npc.mesh.position.z + (npc.dir.z * 1.8);
+                    let tileAheadExists = false;
+                    for(let b of blocks) {
+                        if(Math.abs(b.position.y + 1.0 - npc.mesh.position.y) < 0.6) {
+                            if(Math.abs(b.position.x - checkAheadX) < 1.1 && Math.abs(b.position.z - checkAheadZ) < 1.1) { tileAheadExists = true; break; }
+                        }
+                    }
+
+                    if (!tileAheadExists && npc.isOnGround) {
+                        let leapGap = selectedDifficulty === "easy" ? 3.4 : 3.6;
+                        let leapTargetX = npc.mesh.position.x + (npc.dir.x * leapGap);
+                        let leapTargetZ = npc.mesh.position.z + (npc.dir.z * leapGap);
+                        let landableTileExists = false;
+
+                        for(let b of blocks) {
+                            if(Math.abs(b.position.y + 1.0 - npc.mesh.position.y) < 0.6) {
+                                if(Math.abs(b.position.x - leapTargetX) < 1.1 && Math.abs(b.position.z - leapTargetZ) < 1.1) { landableTileExists = true; break; }
+                            }
+                        }
+
+                        if (landableTileExists) { npc.velocityY = jumpForce * (selectedDifficulty === "hardcore" ? 1.05 : 1.0); npc.isOnGround = false; }
+                        else { npc.dir.set((Math.random() - 0.5), 0, (Math.random() - 0.5)).normalize(); }
+                    }
+                    
+                    let movementVelocityFactor = selectedDifficulty === "hardcore" ? (isTrackingActive ? 0.085 : 0.06) : (isTrackingActive ? 0.055 : 0.045);
+                    npc.mesh.position.addScaledVector(npc.dir, movementVelocityFactor);
+
+                    npc.breakTimer++;
+                    let mineTickRate = selectedDifficulty === "hardcore" ? 12 : 22;
+                    if (npc.breakTimer > mineTickRate) { 
+                        let mineTargetX = npc.mesh.position.x + (npc.dir.x * 2.2); let mineTargetZ = npc.mesh.position.z + (npc.dir.z * 2.2);
+                        if (selectedDifficulty === "hardcore" && distanceToPlayer < 3.5 && heightDiff < 1.0) { mineTargetX = playerPos.x; mineTargetZ = playerPos.z; }
+
+                        let targetBlock = null;
+                        for(let b of blocks) {
+                            if(Math.abs(b.position.y + 1.0 - npc.mesh.position.y) < 1.5) {
+                                if(Math.abs(b.position.x - mineTargetX) < 1.1 && Math.abs(b.position.z - mineTargetZ) < 1.1) { targetBlock = b; break; }
+                            }
+                        }
+                        if (targetBlock) { gameScene.remove(targetBlock); blocks = blocks.filter(b => b !== targetBlock); if (distanceToPlayer < 15) playBreakSound(); }
+                        npc.breakTimer = 0;
+                    }
+
+                    if(npc.mesh.position.y < -15.0) { gameScene.remove(npc.mesh); npcs.splice(i, 1); }
+                }
+            }
+
+            // Camera Setup Follow updates
+            if (!isThirdPerson) {
+                gameCamera.position.copy(playerPos); gameCamera.position.y += cameraEyeHeight; 
+                const targetLook = new THREE.Vector3(0, 0, -1);
+                targetLook.applyAxisAngle(new THREE.Vector3(1, 0, 0), pitch); targetLook.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+                targetLook.add(gameCamera.position); gameCamera.lookAt(targetLook);
+            } else {
+                const backwardCamVector = new THREE.Vector3(0, 0, 1);
+                backwardCamVector.applyAxisAngle(new THREE.Vector3(1, 0, 0), pitch); backwardCamVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+                gameCamera.position.copy(playerPos).addScaledVector(backwardCamVector, 4.5); gameCamera.position.y += cameraEyeHeight + 0.5; 
+                const focusPoint = playerPos.clone(); focusPoint.y += cameraEyeHeight - 0.3; gameCamera.lookAt(focusPoint);
+            }
+            
+            gameRenderer.render(gameScene, gameCamera);
+        }
+
+        function restartSpleefGame() {
+            initSpleefWorld();
+            document.getElementById("game-stage").requestPointerLock();
+        }
+    </script>
+</body>
+</html>
