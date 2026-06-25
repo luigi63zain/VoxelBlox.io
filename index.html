@@ -537,6 +537,7 @@
         let playerVisualGroup;
         let isSprintingToggled = false, isThirdPerson = false;
         let keys = { w:0, a:0, s:0, d:0, ' ':0, shift:0, arrowleft:0, arrowright:0, arrowup:0, arrowdown:0 };
+        let isLeftMouseDown = false; // Track active long-press mining status
 
         const raycaster = new THREE.Raycaster();
         const centerMouse = new THREE.Vector2(0, 0);
@@ -548,12 +549,12 @@
             
             if(currentActiveMode === 'spleef') {
                 document.getElementById("ui-username").innerText = "🏃 " + username.toUpperCase();
-                document.getElementById("ui-controls-desc").innerHTML = "WASD + Arrows to Move | F5 Camera<br>Left Click to Break Blocks";
+                document.getElementById("ui-controls-desc").innerHTML = "WASD + Arrows to Move | F5 Camera<br>Hold Left Click to Break Blocks";
                 document.getElementById("hotbar").style.display = "none";
                 document.getElementById("fail-title").innerText = "LAVA ELIMINATION";
             } else {
                 document.getElementById("ui-username").innerText = "🛠️ " + username.toUpperCase() + " (FREEBUILD)";
-                document.getElementById("ui-controls-desc").innerHTML = "WASD + Arrows to Move | F5 Camera<br>Double-Tap Space to Fly | Keys 1-5 to Swap Blocks<br>Left Click: Break | Right Click: Place";
+                document.getElementById("ui-controls-desc").innerHTML = "WASD + Arrows to Move | F5 Camera<br>Double-Tap Space to Fly | Keys 1-5 to Swap Blocks<br>Hold Left Click: Break | Right Click: Place";
                 document.getElementById("hotbar").style.display = "flex";
                 document.getElementById("fail-title").innerText = "FELL OFF WORLD";
                 updateHotbarUI();
@@ -579,7 +580,7 @@
 
         function initSpleefWorld() {
             isGameOver = false; blocks = []; npcs = []; yaw = 0; pitch = 0;
-            isSprintingToggled = false; isThirdPerson = false; isFlying = false;
+            isSprintingToggled = false; isThirdPerson = false; isFlying = false; isLeftMouseDown = false;
             playerPos.set(0, 6.0, 0); playerVelocityY = 0; isPlayerOnGround = false;
             document.getElementById("game-over-screen").style.display = "none";
 
@@ -682,8 +683,8 @@
             document.removeEventListener('mousemove', handleMouseMove); document.addEventListener('mousemove', handleMouseMove);
             window.removeEventListener('resize', onWindowResize); window.addEventListener('resize', onWindowResize);
             
-            // Pointer actions split for Right Click building support
             window.removeEventListener('mousedown', handleMouseDown); window.addEventListener('mousedown', handleMouseDown);
+            window.removeEventListener('mouseup', handleMouseUp); window.addEventListener('mouseup', handleMouseUp);
 
             runGameLoop();
         }
@@ -736,30 +737,21 @@
             }
             if(isGameOver) return;
 
-            raycaster.setFromCamera(centerMouse, gameCamera);
-            raycaster.far = 16; 
-            const intersects = raycaster.intersectObjects(blocks);
-
             if(e.button === 0) {
-                // LEFT CLICK: Break block
-                if(intersects.length > 0) {
-                    const targetedTile = intersects[0].object;
-                    gameScene.remove(targetedTile);
-                    blocks = blocks.filter(b => b !== targetedTile);
-                    playBreakSound();
-                }
+                isLeftMouseDown = true; // Engage continuous breaking loop flag
             } else if(e.button === 2 && currentActiveMode === 'freebuild') {
                 // RIGHT CLICK: Build voxel block (Freebuild only)
+                raycaster.setFromCamera(centerMouse, gameCamera);
+                raycaster.far = 16; 
+                const intersects = raycaster.intersectObjects(blocks);
                 if(intersects.length > 0) {
                     const targetBlock = intersects[0].object;
                     const normal = intersects[0].face.normal.clone();
                     
-                    // Derive next aligned structural box point based on hit grid face vector
                     let buildX = targetBlock.position.x + (normal.x * 2);
                     let buildY = targetBlock.position.y + (normal.y * 2);
                     let buildZ = targetBlock.position.z + (normal.z * 2);
 
-                    // Prevent spawning directly inside players body space
                     let distToPlayer = playerPos.distanceTo(new THREE.Vector3(buildX, playerPos.y, buildZ));
                     if(distToPlayer < 1.2 && Math.abs(buildY - playerPos.y) < 1.5) return;
 
@@ -772,6 +764,12 @@
                     blocks.push(newBlock);
                     playBuildSound();
                 }
+            }
+        }
+
+        function handleMouseUp(e) {
+            if(e.button === 0) {
+                isLeftMouseDown = false;
             }
         }
 
@@ -793,6 +791,19 @@
             if (keys.arrowup) pitch += keyboardTurnSpeed * 0.7;
             if (keys.arrowdown) pitch -= keyboardTurnSpeed * 0.7;
             pitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, pitch));
+
+            // --- CONTINUOUS HOLD TO BREAK PATTERN ENGINE ---
+            if (isLeftMouseDown) {
+                raycaster.setFromCamera(centerMouse, gameCamera);
+                raycaster.far = 16; 
+                const intersects = raycaster.intersectObjects(blocks);
+                if(intersects.length > 0) {
+                    const targetedTile = intersects[0].object;
+                    gameScene.remove(targetedTile);
+                    blocks = blocks.filter(b => b !== targetedTile);
+                    playBreakSound();
+                }
+            }
 
             let currentMoveSpeed = isFlying ? 0.16 : 0.08; 
             if (isSprintingToggled) currentMoveSpeed *= 1.5; 
@@ -824,13 +835,11 @@
 
             // --- Y AXIS MOVEMENT ENGINE ---
             if (isFlying) {
-                // Smooth airborne velocity manipulation when flying
                 let flyVerticalSpeed = 0.12;
                 if (keys[' ']) playerPos.y += flyVerticalSpeed;
                 if (keys['shift']) playerPos.y -= flyVerticalSpeed;
                 playerVelocityY = 0;
             } else {
-                // Normal gravity processing logic
                 playerVelocityY += gravity; 
                 playerPos.y += playerVelocityY;
             }
@@ -850,14 +859,13 @@
                 playerPos.y = currentFloorY; 
                 playerVelocityY = 0; 
                 isPlayerOnGround = true;
-                if (isFlying) isFlying = false; // Turn off flying automatically upon touching down safely
+                if (isFlying) isFlying = false; 
             } else { 
                 isPlayerOnGround = false; 
             }
 
             if (keys[' '] && isPlayerOnGround && !isFlying) { playerVelocityY = jumpForce; isPlayerOnGround = false; playJumpSound(); }
 
-            // Death floor checking boundary limits
             if(playerPos.y < -16.0) {
                 isGameOver = true; if(currentActiveMode === 'spleef') playLavaSound();
                 document.exitPointerLock(); document.getElementById("game-over-screen").style.display = "flex";
