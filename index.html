@@ -34,6 +34,106 @@
             min-height: 100vh;
             padding: 20px;
             box-sizing: border-box;
+            position: relative;
+        }
+
+        /* Top Right Links Button Configuration */
+        .menu-links-btn {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            background-color: #2a2a2a;
+            color: #ff9800;
+            border: 3px solid #ff9800;
+            border-radius: 4px;
+            padding: 10px 18px;
+            font-size: 0.8rem;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #000;
+            z-index: 50;
+        }
+        .menu-links-btn:hover {
+            background-color: #ff9800;
+            color: #000;
+            box-shadow: 0 4px 0 #b36600;
+        }
+
+        /* Links Popup Modal Overlay */
+        #links-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .links-modal {
+            background-color: #1e1e1e;
+            border: 4px solid #ff9800;
+            border-radius: 4px;
+            width: 90%;
+            max-width: 450px;
+            padding: 25px;
+            box-sizing: border-box;
+            position: relative;
+            text-align: center;
+            box-shadow: 0 10px 0 #000;
+        }
+
+        .close-modal-btn {
+            position: absolute;
+            top: 12px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #aaa;
+            font-size: 1.2rem;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .close-modal-btn:hover { color: #ff9800; }
+
+        .modal-title {
+            color: #ff9800;
+            font-size: 1.2rem;
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px #000;
+        }
+
+        .links-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .social-link-item {
+            display: block;
+            background-color: #2a2a2a;
+            border: 3px solid #3a3a3a;
+            color: #ffffff;
+            padding: 14px;
+            font-size: 0.75rem;
+            text-decoration: none;
+            border-radius: 2px;
+            box-shadow: 0 4px 0 #000;
+            transition: transform 0.1s;
+        }
+        .social-link-item:hover {
+            border-color: #ff9800;
+            color: #ff9800;
+            transform: translateY(-2px);
+        }
+        .social-link-item:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #000;
         }
 
         .container {
@@ -292,6 +392,8 @@
 <body>
 
     <div id="lobby-screen">
+        <button class="menu-links-btn" onclick="toggleLinksModal(true)">LINKS</button>
+
         <div class="container">
             <div class="panel left-panel">
                 <h2>PLAYER PREVIEW</h2>
@@ -352,6 +454,19 @@
         </div>
     </div>
 
+    <div id="links-overlay" onclick="handleOverlayClick(event)">
+        <div class="links-modal">
+            <button class="close-modal-btn" onclick="toggleLinksModal(false)">X</button>
+            <h3 class="modal-title">OFFICIAL LINKS</h3>
+            <div class="links-grid">
+                <a href="https://www.youtube.com/@voxelblox-io" target="_blank" class="social-link-item">📺 YOUTUBE CHANNEL</a>
+                <a href="https://luigi64zain.itch.io/voxelblox-io" target="_blank" class="social-link-item">🎮 ITCH.IO VERSION</a>
+                <a href="https://github.com/luigi63zain/VoxelBlox.io" target="_blank" class="social-link-item">🐙 GITHUB REPOSITORY</a>
+                <a href="https://sites.google.com/view/voxelblox-io/home" target="_blank" class="social-link-item">🌐 GOOGLE SITES</a>
+            </div>
+        </div>
+    </div>
+
     <div id="game-stage">
         <div id="pointer-alert">
             <b>🔒 MOUSE RESTRAINED:</b> Click the map or use the <b>ARROW KEYS</b> to turn around if your mouse cursor isn't locking properly.
@@ -377,6 +492,16 @@
     </div>
 
     <script>
+        // --- POPUP LINKS ROUTING LOGIC ---
+        function toggleLinksModal(show) {
+            document.getElementById('links-overlay').style.display = show ? 'flex' : 'none';
+        }
+        function handleOverlayClick(e) {
+            if (e.target === document.getElementById('links-overlay')) {
+                toggleLinksModal(false);
+            }
+        }
+
         // --- GAMEMODE ROUTER ---
         let currentActiveMode = 'spleef'; // 'spleef' or 'freebuild'
 
@@ -732,13 +857,18 @@
 
         function handleMouseDown(e) {
             if(document.pointerLockElement !== document.getElementById("game-stage")) {
-                if(!isGameOver) document.getElementById("game-stage").requestPointerLock();
+                // Prevent intercepting mouse clicks if menu overlay links dashboard is currently open
+                if(document.getElementById('links-overlay').style.display === 'flex') return;
+                
+                if(!isGameOver && document.getElementById("game-stage").style.display === "block") {
+                    document.getElementById("game-stage").requestPointerLock();
+                }
                 return;
             }
             if(isGameOver) return;
 
             if(e.button === 0) {
-                isLeftMouseDown = true; // Engage continuous breaking loop flag
+                isLeftMouseDown = true; 
             } else if(e.button === 2 && currentActiveMode === 'freebuild') {
                 // RIGHT CLICK: Build voxel block (Freebuild only)
                 raycaster.setFromCamera(centerMouse, gameCamera);
@@ -793,7 +923,7 @@
             pitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, pitch));
 
             // --- CONTINUOUS HOLD TO BREAK PATTERN ENGINE ---
-            if (isLeftMouseDown) {
+            if (isLeftMouseDown && document.pointerLockElement === document.getElementById("game-stage")) {
                 raycaster.setFromCamera(centerMouse, gameCamera);
                 raycaster.far = 16; 
                 const intersects = raycaster.intersectObjects(blocks);
