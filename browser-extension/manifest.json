@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "VoxelBlox.io",
+  "version": "1.0",
+  "description": "Play different blocky minigames such as Spleef and edit your character and username!",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Play VoxelBlox.io",
+    "default_icon": {
+      "48": "icon-48.png",
+      "128": "icon-128.png"
+    }
+  },
+  "icons": {
+    "48": "icon-48.png",
+    "128": "icon-128.png"
+  }
+}
