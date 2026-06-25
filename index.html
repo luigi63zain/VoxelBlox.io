@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VoxelBlox.io - Voxel Spleef & Freebuild</title>
     
+    <link rel="manifest" href="manifest.json">
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -288,101 +290,40 @@
             height: 50px;
             background: #2a2a2a;
             border: 3px solid #555;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            font-size: 0.5rem;
-            text-align: center;
-            color: #fff;
-            box-sizing: border-box;
-            position: relative;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            font-size: 0.5rem; text-align: center; color: #fff; box-sizing: border-box; position: relative;
         }
 
-        .hotbar-slot.active {
-            border-color: #ff9800;
-            background: #473216;
-        }
-
-        .hotbar-key {
-            position: absolute;
-            top: 2px;
-            left: 4px;
-            color: #ff9800;
-            font-weight: bold;
-            font-size: 0.5rem;
-        }
-
-        .slot-icon {
-            width: 16px;
-            height: 16px;
-            margin-bottom: 2px;
-            border-radius: 2px;
-        }
+        .hotbar-slot.active { border-color: #ff9800; background: #473216; }
+        .hotbar-key { position: absolute; top: 2px; left: 4px; color: #ff9800; font-weight: bold; font-size: 0.5rem; }
+        .slot-icon { width: 16px; height: 16px; margin-bottom: 2px; border-radius: 2px; }
 
         #crosshair {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 10px;
-            height: 10px;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-            z-index: 10;
+            position: absolute; top: 50%; left: 50%; width: 10px; height: 10px;
+            transform: translate(-50%, -50%); pointer-events: none; z-index: 10;
         }
-        #crosshair::before, #crosshair::after {
-            content: '';
-            position: absolute;
-            background: white;
-        }
+        #crosshair::before, #crosshair::after { content: ''; position: absolute; background: white; }
         #crosshair::before { top: 4px; left: -5px; width: 20px; height: 2px; }
         #crosshair::after { top: -5px; left: 4px; width: 2px; height: 20px; }
 
         #pointer-alert {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(0,0,0,0.85);
-            border: 3px solid #ff9800;
-            padding: 12px;
-            font-size: 0.6rem;
-            color: #fff;
-            max-width: 280px;
-            z-index: 40;
-            display: none;
-            pointer-events: auto;
-            line-height: 1.4;
+            position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.85);
+            border: 3px solid #ff9800; padding: 12px; font-size: 0.6rem; color: #fff;
+            max-width: 280px; z-index: 40; display: none; pointer-events: auto; line-height: 1.4;
         }
 
         #game-over-screen {
-            display: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 0, 0, 0.35);
-            backdrop-filter: blur(4px);
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 20;
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 0, 0, 0.35); backdrop-filter: blur(4px);
+            flex-direction: column; justify-content: center; align-items: center; z-index: 20;
         }
 
         #game-over-screen h1 { font-size: 2.2rem; color: #fff; margin: 0; text-shadow: 4px 4px #000; }
 
         .action-btn {
-            background-color: #ffffff;
-            color: #000000;
-            border: none;
-            padding: 12px 30px;
-            font-size: 0.9rem;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 20px;
-            pointer-events: auto;
-            font-family: inherit;
-            box-shadow: 0 5px 0 #aaaaaa;
+            background-color: #ffffff; color: #000000; border: none; padding: 12px 30px;
+            font-size: 0.9rem; font-weight: bold; cursor: pointer; margin-top: 20px;
+            pointer-events: auto; font-family: inherit; box-shadow: 0 5px 0 #aaaaaa;
         }
         .action-btn:hover { background-color: #ff9800; box-shadow: 0 5px 0 #b36600; }
     </style>
@@ -503,7 +444,7 @@
         }
 
         // --- GAMEMODE ROUTER ---
-        let currentActiveMode = 'spleef'; // 'spleef' or 'freebuild'
+        let currentActiveMode = 'spleef'; 
 
         function selectMode(mode) {
             currentActiveMode = mode;
@@ -552,7 +493,6 @@
         
         const blockGeo = new THREE.BoxGeometry(1.98, 1.98, 1.98);
 
-        // Block Materials definitions for Freebuild Mode
         const materialsMap = {
             snow: new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0x222222 }),
             wood: new THREE.MeshLambertMaterial({ color: 0xcd853f }),
@@ -561,7 +501,7 @@
             dirt: new THREE.MeshLambertMaterial({ color: 0x8b4513 })
         };
         const hotbarBlockTypes = ['snow', 'wood', 'log', 'grass', 'dirt'];
-        let selectedBlockIndex = 0; // default snow
+        let selectedBlockIndex = 0; 
 
         function buildFullCharacterMesh(targetGroup, chosenStyle, customHairMat, customPupilMat, customSuitMat) {
             const hMat = customHairMat || hairMat;
@@ -655,14 +595,14 @@
         let playerPos = new THREE.Vector3(0, 5.0, 0); 
         let playerVelocityY = 0;
         let isPlayerOnGround = false;
-        let isFlying = false; // Flight toggle state tracker
-        let lastJumpTapTime = 0; // Double tap timer tracking
+        let isFlying = false; 
+        let lastJumpTapTime = 0; 
         const gravity = -0.012, jumpForce = 0.22, cameraEyeHeight = 1.8; 
 
         let playerVisualGroup;
         let isSprintingToggled = false, isThirdPerson = false;
         let keys = { w:0, a:0, s:0, d:0, ' ':0, shift:0, arrowleft:0, arrowright:0, arrowup:0, arrowdown:0 };
-        let isLeftMouseDown = false; // Track active long-press mining status
+        let isLeftMouseDown = false; 
 
         const raycaster = new THREE.Raycaster();
         const centerMouse = new THREE.Vector2(0, 0);
@@ -735,7 +675,6 @@
             let half = Math.floor(arenaSize / 2);
 
             if (currentActiveMode === 'spleef') {
-                // Spleef Arena setup (3 spaced layers)
                 const layerColors = [0xffffff, 0xddf2ff, 0x99ccff]; 
                 const layerEmissive = [0x222222, 0x112233, 0x002244];
                 const yOffsets = [2, -4, -10]; 
@@ -751,7 +690,6 @@
                     }
                 }
 
-                // NPC Deployment (Spleef Only)
                 const randomHairColors = [0x3e2723, 0x1a0c00, 0xd7ccc8, 0xffb74d, 0xe0a96d];
                 const randomEyeColors = [0x1565c0, 0x2e7d32, 0x5d4037, 0x000000];
                 const randomSuitColors = [0xe91e63, 0x9c27b0, 0x00e676, 0x3f51b5, 0x00bcd4];
@@ -783,8 +721,7 @@
                     });
                 }
             } else {
-                // Freebuild Mode setup: Flat Grass Terrain map
-                const flatSize = 31; // Slightly larger for construction area
+                const flatSize = 31; 
                 let fHalf = Math.floor(flatSize / 2);
                 for(let x = -fHalf; x <= fHalf; x++) {
                     for(let z = -fHalf; z <= fHalf; z++) {
@@ -795,14 +732,12 @@
                 }
             }
 
-            // Toxic Lava base
             const lavaGeo = new THREE.PlaneGeometry(550, 550);
             const lavaMat = new THREE.MeshBasicMaterial({ color: currentActiveMode === 'freebuild' ? 0x050811 : 0xff2200, side: THREE.DoubleSide });
             const lava = new THREE.Mesh(lavaGeo, lavaMat);
             lava.rotation.x = Math.PI / 2; lava.position.y = -18;
             gameScene.add(lava);
 
-            // Listeners Configuration
             window.removeEventListener('keydown', handleKeyDown); window.addEventListener('keydown', handleKeyDown);
             window.removeEventListener('keyup', handleKeyUp); window.addEventListener('keyup', handleKeyUp);
             document.removeEventListener('mousemove', handleMouseMove); document.addEventListener('mousemove', handleMouseMove);
@@ -823,7 +758,6 @@
                 updateHotbarUI();
             }
             else if(e.key === ' ') {
-                // DOUBLE TAP DETECTION FOR FLIGHT MECHANIC (ONLY IN FREEBUILD)
                 if (currentActiveMode === 'freebuild') {
                     let now = performance.now();
                     if(now - lastJumpTapTime < 300) {
@@ -857,7 +791,6 @@
 
         function handleMouseDown(e) {
             if(document.pointerLockElement !== document.getElementById("game-stage")) {
-                // Prevent intercepting mouse clicks if menu overlay links dashboard is currently open
                 if(document.getElementById('links-overlay').style.display === 'flex') return;
                 
                 if(!isGameOver && document.getElementById("game-stage").style.display === "block") {
@@ -870,7 +803,6 @@
             if(e.button === 0) {
                 isLeftMouseDown = true; 
             } else if(e.button === 2 && currentActiveMode === 'freebuild') {
-                // RIGHT CLICK: Build voxel block (Freebuild only)
                 raycaster.setFromCamera(centerMouse, gameCamera);
                 raycaster.far = 16; 
                 const intersects = raycaster.intersectObjects(blocks);
@@ -903,7 +835,6 @@
             }
         }
 
-        // Prevent browser right click context box interference
         window.addEventListener('contextmenu', e => e.preventDefault());
 
         function onWindowResize() {
@@ -922,7 +853,6 @@
             if (keys.arrowdown) pitch -= keyboardTurnSpeed * 0.7;
             pitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, pitch));
 
-            // --- CONTINUOUS HOLD TO BREAK PATTERN ENGINE ---
             if (isLeftMouseDown && document.pointerLockElement === document.getElementById("game-stage")) {
                 raycaster.setFromCamera(centerMouse, gameCamera);
                 raycaster.far = 16; 
@@ -963,7 +893,6 @@
                 }
             }
 
-            // --- Y AXIS MOVEMENT ENGINE ---
             if (isFlying) {
                 let flyVerticalSpeed = 0.12;
                 if (keys[' ']) playerPos.y += flyVerticalSpeed;
@@ -1005,7 +934,6 @@
             const playerHead = playerVisualGroup.getObjectByName("headJoint");
             if (playerHead) playerHead.rotation.x = pitch; 
 
-            // --- BOT ENGINE (Spleef mode Only processing loop) ---
             if(currentActiveMode === 'spleef') {
                 for(let i = npcs.length - 1; i >= 0; i--) {
                     let npc = npcs[i]; npc.velocityY += gravity; npc.mesh.position.y += npc.velocityY;
@@ -1092,7 +1020,6 @@
                 }
             }
 
-            // Camera Setup Follow updates
             if (!isThirdPerson) {
                 gameCamera.position.copy(playerPos); gameCamera.position.y += cameraEyeHeight; 
                 const targetLook = new THREE.Vector3(0, 0, -1);
@@ -1111,6 +1038,17 @@
         function restartSpleefGame() {
             initSpleefWorld();
             document.getElementById("game-stage").requestPointerLock();
+        }
+
+        // STEP 3: Registering the dynamic inline Service Worker configuration to finalize PWA status
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const swCode = "self.addEventListener('fetch', function(e) { /* Passthrough */ });";
+                const blob = new Blob([swCode], { type: 'application/javascript' });
+                navigator.serviceWorker.register(URL.createObjectURL(blob))
+                    .then(reg => console.log('PWA Service Worker Registered!'))
+                    .catch(err => console.log('Service Worker Setup Error: ', err));
+            });
         }
     </script>
 </body>
