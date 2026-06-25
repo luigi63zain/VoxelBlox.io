@@ -1,0 +1,10 @@
+{
+  "short_name": "VoxelBlox",
+  "name": "VoxelBlox.io",
+  "description": "Play different blocky minigames such as Spleef and edit your character and username!",
+  "start_url": "./index.html",
+  "background_color": "#121212",
+  "theme_color": "#ff9800",
+  "display": "standalone",
+  "orientation": "any"
+}
