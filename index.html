@@ -3,432 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VoxelBlox.io - Voxel Spleef & Freebuild</title>
-    
+    <title>VoxelBlox.io</title>
     <link rel="manifest" href="manifest.json">
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    
     <style>
-        @font-face {
-            font-family: 'pixel-game';
-            src: local('pixel-game'), local('Pixel Game');
-        }
-
-        html, body {
-            background-color: #121212;
-            color: #ffffff;
-            font-family: 'pixel-game', 'Press Start 2P', sans-serif;
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            user-select: none;
-        }
-
-        #lobby-screen {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-            box-sizing: border-box;
-            position: relative;
-        }
-
-        /* Top Right Links Button Configuration */
-        .menu-links-btn {
-            position: absolute;
-            top: 25px;
-            right: 25px;
-            background-color: #2a2a2a;
-            color: #ff9800;
-            border: 3px solid #ff9800;
-            border-radius: 4px;
-            padding: 10px 18px;
-            font-size: 0.8rem;
-            font-family: inherit;
-            cursor: pointer;
-            box-shadow: 0 4px 0 #000;
-            z-index: 50;
-        }
-        .menu-links-btn:hover {
-            background-color: #ff9800;
-            color: #000;
-            box-shadow: 0 4px 0 #b36600;
-        }
-
-        /* Links Popup Modal Overlay */
-        #links-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(4px);
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-
-        .links-modal {
-            background-color: #1e1e1e;
-            border: 4px solid #ff9800;
-            border-radius: 4px;
-            width: 90%;
-            max-width: 450px;
-            padding: 25px;
-            box-sizing: border-box;
-            position: relative;
-            text-align: center;
-            box-shadow: 0 10px 0 #000;
-        }
-
-        .close-modal-btn {
-            position: absolute;
-            top: 12px;
-            right: 15px;
-            background: none;
-            border: none;
-            color: #aaa;
-            font-size: 1.2rem;
-            cursor: pointer;
-            font-family: inherit;
-        }
+        @font-face { font-family: 'pixel-game'; src: local('pixel-game'), local('Pixel Game'); }
+        html, body { background-color: #121212; color: #ffffff; font-family: 'pixel-game', 'Press Start 2P', sans-serif; margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; user-select: none; }
+        #lobby-screen { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; box-sizing: border-box; position: relative; }
+        .menu-links-btn { position: absolute; top: 25px; right: 25px; background-color: #2a2a2a; color: #ff9800; border: 3px solid #ff9800; border-radius: 4px; padding: 10px 18px; font-size: 0.8rem; font-family: inherit; cursor: pointer; box-shadow: 0 4px 0 #000; z-index: 50; }
+        .menu-links-btn:hover { background-color: #ff9800; color: #000; box-shadow: 0 4px 0 #b36600; }
+        #links-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.75); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 100; }
+        .links-modal { background-color: #1e1e1e; border: 4px solid #ff9800; border-radius: 4px; width: 90%; max-width: 450px; padding: 25px; box-sizing: border-box; position: relative; text-align: center; box-shadow: 0 10px 0 #000; }
+        .close-modal-btn { position: absolute; top: 12px; right: 15px; background: none; border: none; color: #aaa; font-size: 1.2rem; cursor: pointer; font-family: inherit; }
         .close-modal-btn:hover { color: #ff9800; }
-
-        .modal-title {
-            color: #ff9800;
-            font-size: 1.2rem;
-            margin-top: 0;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px #000;
-        }
-
-        .links-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .social-link-item {
-            display: block;
-            background-color: #2a2a2a;
-            border: 3px solid #3a3a3a;
-            color: #ffffff;
-            padding: 14px;
-            font-size: 0.75rem;
-            text-decoration: none;
-            border-radius: 2px;
-            box-shadow: 0 4px 0 #000;
-            transition: transform 0.1s;
-        }
-        .social-link-item:hover {
-            border-color: #ff9800;
-            color: #ff9800;
-            transform: translateY(-2px);
-        }
-        .social-link-item:active {
-            transform: translateY(2px);
-            box-shadow: 0 1px 0 #000;
-        }
-
-        .container {
-            display: flex;
-            gap: 30px;
-            max-width: 950px;
-            width: 100%;
-        }
-
-        .panel {
-            background-color: #1e1e1e;
-            border: 4px solid #ff9800;
-            border-radius: 4px;
-            padding: 25px;
-        }
-
-        .left-panel { 
-            flex: 1; 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .right-panel { 
-            flex: 1.2; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: space-between;
-        }
-
-        #canvas3d {
-            width: 280px;
-            height: 340px;
-            background-color: #2a2a2a;
-            border: 3px solid #ff9800;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            cursor: grab;
-        }
-
+        .modal-title { color: #ff9800; font-size: 1.2rem; margin-top: 0; margin-bottom: 20px; text-shadow: 2px 2px #000; }
+        .links-grid { display: flex; flex-direction: column; gap: 12px; }
+        .social-link-item { display: block; background-color: #2a2a2a; border: 3px solid #3a3a3a; color: #ffffff; padding: 14px; font-size: 0.75rem; text-decoration: none; border-radius: 2px; box-shadow: 0 4px 0 #000; transition: transform 0.1s; }
+        .social-link-item:hover { border-color: #ff9800; color: #ff9800; transform: translateY(-2px); }
+        .social-link-item:active { transform: translateY(2px); box-shadow: 0 1px 0 #000; }
+        .container { display: flex; gap: 30px; max-width: 950px; width: 100%; }
+        .panel { background-color: #1e1e1e; border: 4px solid #ff9800; border-radius: 4px; padding: 25px; }
+        .left-panel { flex: 1; display: flex; flex-direction: column; align-items: center; }
+        .right-panel { flex: 1.2; display: flex; flex-direction: column; justify-content: space-between; }
+        #canvas3d { width: 280px; height: 340px; background-color: #2a2a2a; border: 3px solid #ff9800; border-radius: 4px; margin-bottom: 20px; cursor: grab; }
         h1 { color: #ff9800; margin-top: 0; font-size: 2.2rem; text-shadow: 3px 3px #000; letter-spacing: 1px; }
         h2 { color: #ff9800; margin-top: 0; font-size: 1.1rem; }
-        
-        .custom-group {
-            margin-bottom: 12px;
-            width: 100%;
-        }
-
-        .custom-group label {
-            display: block;
-            font-size: 0.7rem;
-            color: #aaaaaa;
-            margin-bottom: 5px;
-        }
-
-        .input-container {
-            display: flex;
-            gap: 8px;
-        }
-
-        input[type="text"], select {
-            width: 100%;
-            padding: 10px;
-            background-color: #2a2a2a;
-            color: white;
-            border: 3px solid #3a3a3a;
-            font-size: 0.75rem;
-            box-sizing: border-box;
-            font-family: inherit;
-        }
-
+        .custom-group { margin-bottom: 12px; width: 100%; }
+        .custom-group label { display: block; font-size: 0.7rem; color: #aaaaaa; margin-bottom: 5px; }
+        .input-container { display: flex; gap: 8px; }
+        input[type="text"], select { width: 100%; padding: 10px; background-color: #2a2a2a; color: white; border: 3px solid #3a3a3a; font-size: 0.75rem; box-sizing: border-box; font-family: inherit; }
         input[type="text"]:focus, select:focus { border-color: #ff9800; outline: none; }
-
-        .dice-btn {
-            background-color: #3a3a3a;
-            color: white;
-            border: 3px solid #555;
-            padding: 0 10px;
-            font-size: 1rem;
-            cursor: pointer;
-        }
-
+        .dice-btn { background-color: #3a3a3a; color: white; border: 3px solid #555; padding: 0 10px; font-size: 1rem; cursor: pointer; }
         .dice-btn:hover { background-color: #ff9800; color: black; border-color: #ff9800; }
-
         .arcade-hub { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
-
-        .game-card {
-            background-color: #2a2a2a;
-            border: 3px solid #3a3a3a;
-            padding: 15px;
-            cursor: pointer;
-        }
-
+        .game-card { background-color: #2a2a2a; border: 3px solid #3a3a3a; padding: 15px; cursor: pointer; }
         .game-card.active { border-color: #ff9800; background-color: #35240e; }
         .game-card.active h3 { color: #ff9800; }
         .game-card h3 { margin: 0; font-size: 1.1rem; }
         .game-card p { margin: 5px 0 0 0; font-size: 0.6rem; color: #aaa; line-height: 1.3; }
-
-        .launch-btn {
-            background-color: #ff9800;
-            color: #000;
-            border: none;
-            padding: 15px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 20px;
-            font-family: inherit;
-            box-shadow: 0 5px 0 #b36600;
-        }
-
+        .launch-btn { background-color: #ff9800; color: #000; border: none; padding: 15px; font-size: 1.1rem; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px; font-family: inherit; box-shadow: 0 5px 0 #b36600; }
         .launch-btn:hover { background-color: #e65100; color: #fff; box-shadow: 0 5px 0 #802c00; }
-
-        #game-stage {
-            display: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-
-        #game-ui {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            text-shadow: 2px 2px #000;
-            pointer-events: none;
-            z-index: 10;
-        }
-
+        #game-stage { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        #game-ui { position: absolute; top: 20px; left: 20px; text-shadow: 2px 2px #000; pointer-events: none; z-index: 10; }
         #game-ui h2 { margin: 0; color: #fff; font-size: 1.3rem; }
         #game-ui p { margin: 8px 0 0 0; color: #ff9800; font-size: 0.65rem; line-height: 1.5; }
-
-        /* Creative Inventory Hotbar Layer */
-        #hotbar {
-            display: none;
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(30, 30, 30, 0.85);
-            border: 4px solid #3a3a3a;
-            padding: 6px;
-            gap: 8px;
-            z-index: 15;
-            pointer-events: none;
-        }
-
-        .hotbar-slot {
-            width: 50px;
-            height: 50px;
-            background: #2a2a2a;
-            border: 3px solid #555;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            font-size: 0.5rem; text-align: center; color: #fff; box-sizing: border-box; position: relative;
-        }
-
+        #hotbar { display: none; position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(30, 30, 30, 0.85); border: 4px solid #3a3a3a; padding: 6px; gap: 8px; z-index: 15; pointer-events: none; }
+        .hotbar-slot { width: 50px; height: 50px; background: #2a2a2a; border: 3px solid #555; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 0.5rem; text-align: center; color: #fff; box-sizing: border-box; position: relative; }
         .hotbar-slot.active { border-color: #ff9800; background: #473216; }
         .hotbar-key { position: absolute; top: 2px; left: 4px; color: #ff9800; font-weight: bold; font-size: 0.5rem; }
         .slot-icon { width: 16px; height: 16px; margin-bottom: 2px; border-radius: 2px; }
-
-        #crosshair {
-            position: absolute; top: 50%; left: 50%; width: 10px; height: 10px;
-            transform: translate(-50%, -50%); pointer-events: none; z-index: 10;
-        }
+        #crosshair { position: absolute; top: 50%; left: 50%; width: 10px; height: 10px; transform: translate(-50%, -50%); pointer-events: none; z-index: 10; }
         #crosshair::before, #crosshair::after { content: ''; position: absolute; background: white; }
         #crosshair::before { top: 4px; left: -5px; width: 20px; height: 2px; }
         #crosshair::after { top: -5px; left: 4px; width: 2px; height: 20px; }
-
-        #pointer-alert {
-            position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.85);
-            border: 3px solid #ff9800; padding: 12px; font-size: 0.6rem; color: #fff;
-            max-width: 280px; z-index: 40; display: none; pointer-events: auto; line-height: 1.4;
-        }
-
-        #game-over-screen {
-            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 0, 0, 0.35); backdrop-filter: blur(4px);
-            flex-direction: column; justify-content: center; align-items: center; z-index: 20;
-        }
-
+        #pointer-alert { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.85); border: 3px solid #ff9800; padding: 12px; font-size: 0.6rem; color: #fff; max-width: 280px; z-index: 40; display: none; pointer-events: auto; line-height: 1.4; }
+        #game-over-screen { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 0, 0, 0.35); backdrop-filter: blur(4px); flex-direction: column; justify-content: center; align-items: center; z-index: 20; }
         #game-over-screen h1 { font-size: 2.2rem; color: #fff; margin: 0; text-shadow: 4px 4px #000; }
-
-        .action-btn {
-            background-color: #ffffff; color: #000000; border: none; padding: 12px 30px;
-            font-size: 0.9rem; font-weight: bold; cursor: pointer; margin-top: 20px;
-            pointer-events: auto; font-family: inherit; box-shadow: 0 5px 0 #aaaaaa;
-        }
+        .action-btn { background-color: #ffffff; color: #000000; border: none; padding: 12px 30px; font-size: 0.9rem; font-weight: bold; cursor: pointer; margin-top: 20px; pointer-events: auto; font-family: inherit; box-shadow: 0 5px 0 #aaaaaa; }
         .action-btn:hover { background-color: #ff9800; box-shadow: 0 5px 0 #b36600; }
+        .exit-btn { background-color: #2a2a2a; color: #ffffff; border: 3px solid #ff9800; padding: 12px 30px; font-size: 0.9rem; font-weight: bold; cursor: pointer; margin-top: 12px; pointer-events: auto; font-family: inherit; box-shadow: 0 5px 0 #000000; }
+        .exit-btn:hover { background-color: #ff2200; border-color: #ff2200; box-shadow: 0 5px 0 #800c00; }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body>
-
     <div id="lobby-screen">
         <button class="menu-links-btn" onclick="toggleLinksModal(true)">LINKS</button>
-
         <div class="container">
             <div class="panel left-panel">
                 <h2>PLAYER PREVIEW</h2>
                 <div id="canvas3d"></div>
-                <div class="custom-group">
-                    <label>USERNAME</label>
-                    <div class="input-container">
-                        <input type="text" id="username-input" maxlength="20">
-                        <button class="dice-btn" onclick="randomizeAll()">🎲</button>
-                    </div>
-                </div>
-                <div class="custom-group">
-                    <label>CHARACTER STYLE</label>
-                    <select id="gender-select" onchange="updateHairStyle()">
-                        <option value="boy">Boy (Unified Stair Cut)</option>
-                        <option value="girl">Girl (Extended 3D Hair)</option>
-                    </select>
-                </div>
-                <div class="custom-group">
-                    <label>EYE COLOR</label>
-                    <select id="eye-select" onchange="updateEyeColor()">
-                        <option value="#000000">Black</option>
-                        <option value="#2e7d32">Green</option>
-                        <option value="#1565c0">Blue</option>
-                        <option value="#5d4037">Brown</option>
-                        <option value="#ad1457">Purple</option>
-                    </select>
-                </div>
+                <div class="custom-group"><label>USERNAME</label><div class="input-container"><input type="text" id="username-input" maxlength="20"><button class="dice-btn" onclick="randomizeAll()">🎲</button></div></div>
+                <div class="custom-group"><label>CHARACTER STYLE</label><select id="gender-select" onchange="updateHairStyle()"><option value="boy">Boy (Unified Stair Cut)</option><option value="girl">Girl (Extended 3D Hair)</option></select></div>
+                <div class="custom-group"><label>EYE COLOR</label><select id="eye-select" onchange="updateEyeColor()"><option value="#000000">Black</option><option value="#2e7d32">Green</option><option value="#1565c0">Blue</option><option value="#5d4037">Brown</option><option value="#ad1457">Purple</option></select></div>
             </div>
-
             <div class="panel right-panel">
                 <div>
                     <h1>VOXELBLOX.IO</h1>
                     <p style="color: #aaa; margin-top: -10px; font-size: 0.65rem; line-height: 1.4;">Select your game mode, personalize your avatar, and deploy into the match.</p>
-                    
                     <div class="arcade-hub">
-                        <div class="game-card active" id="card-spleef" onclick="selectMode('spleef')">
-                            <h3>SPLEEF MATCH</h3>
-                            <p>Multi-layered voxel competitive survival drop against active bots.</p>
-                        </div>
-                        <div class="game-card" id="card-freebuild" onclick="selectMode('freebuild')">
-                            <h3>FREEBUILD MODE</h3>
-                            <p>No bots. Flat endless world with inventory switching & brick placing.</p>
-                        </div>
+                        <div class="game-card active" id="card-lava" onclick="selectMode('lava')"><h3>FLOOR IS LAVA</h3><p>Survival match. Safe floor tiles flash and turn into real lava every few seconds! (Regen in 20s)</p></div>
+                        <div class="game-card" id="card-spleef" onclick="selectMode('spleef')"><h3>SPLEEF MATCH</h3><p>Multi-layered voxel competitive survival drop against active bots.</p></div>
+                        <div class="game-card" id="card-freebuild" onclick="selectMode('freebuild')"><h3>FREEBUILD MODE</h3><p>No bots. Flat endless world with inventory switching & brick placing.</p></div>
                     </div>
-                    
-                    <div class="custom-group" id="difficulty-box" style="margin-top: 20px;">
-                        <label style="color: #ff9800;">BOT DIFFICULTY</label>
-                        <select id="difficulty-select">
-                            <option value="easy">Easy (Casual Bots)</option>
-                            <option value="medium" selected>Medium (Standard)</option>
-                            <option value="hardcore">Hardcore (Aggressive)</option>
-                        </select>
-                    </div>
+                    <div class="custom-group" id="difficulty-box" style="margin-top: 20px;"><label style="color: #ff9800;">BOT DIFFICULTY</label><select id="difficulty-select"><option value="easy">Easy (Casual Bots)</option><option value="medium" selected>Medium (Standard)</option><option value="hardcore">Hardcore (Aggressive)</option></select></div>
                 </div>
                 <button class="launch-btn" onclick="launchGame()">LAUNCH GAME</button>
             </div>
         </div>
     </div>
-
     <div id="links-overlay" onclick="handleOverlayClick(event)">
         <div class="links-modal">
             <button class="close-modal-btn" onclick="toggleLinksModal(false)">X</button>
             <h3 class="modal-title">OFFICIAL LINKS</h3>
             <div class="links-grid">
                 <a href="https://luigi63zain.github.io/VoxelBlox.io/browser-extension.zip" download class="social-link-item" onclick="showExtensionGuide()">📥 DOWNLOAD CHROMIUM ADDON</a>
-                
                 <a href="https://www.youtube.com/@voxelblox-io" target="_blank" class="social-link-item">📺 YOUTUBE CHANNEL</a>
-                <a href="https://luigi64zain.itch.io/voxelblox-io" target="_blank" class="social-link-item">🎮 ITCH.IO VERSION</a>
+                <a href="https://luigi64zain.itch.io/voxelblox-io" target="_blank" class="social-link-item">GRAND PLAYGROUND (ITCH.IO)</a>
                 <a href="https://github.com/luigi63zain/VoxelBlox.io" target="_blank" class="social-link-item">🐙 GITHUB REPOSITORY</a>
                 <a href="https://sites.google.com/view/voxelblox-io/home" target="_blank" class="social-link-item">🌐 GOOGLE SITES</a>
             </div>
-
             <div id="extension-instructions" style="display:none; margin-top:15px; padding:12px; background:#2a2a2a; border:2px dashed #ff9800; font-size:0.55rem; text-align:left; line-height:1.5; color:#aaa;">
                 <b style="color:#ff2200; font-size:0.6rem; display:block; text-align:center; margin-bottom:8px;">⚠️ CRITICAL FIRST STEP: YOU MUST EXTRACT THE ZIP!</b>
-                1. Find the downloaded <span style="color:#fff;">browser-extension.zip</span> on your computer.<br>
-                2. Right-click it and choose <b style="color:#ff9800;">"Extract All"</b> or <b style="color:#ff9800;">"Unzip"</b> to turn it into a regular folder.<br>
-                3. Open Chrome/Edge and go to <span style="color:#fff;">chrome://extensions/</span><br>
-                4. Switch on <b style="color:#fff;">Developer Mode</b> (top right switch).<br>
-                5. Click <b style="color:#fff;">Load unpacked</b> (top left) and select the <b style="color:#ff9800;">EXTRACTED FOLDER</b> you just unzipped!
+                1. Find the downloaded <span style="color:#fff;">browser-extension.zip</span> on your computer.<br>2. Right-click it and choose <b style="color:#ff9800;">"Extract All"</b> or <b style="color:#ff9800;">"Unzip"</b> to turn it into a regular folder.<br>3. Open Chrome/Edge and go to <span style="color:#fff;">chrome://extensions/</span><br>4. Switch on <b style="color:#fff;">Developer Mode</b> (top right switch).<br>5. Click <b style="color:#fff;">Load unpacked</b> (top left) and select the <b style="color:#ff9800;">EXTRACTED FOLDER</b> you just unzipped!
             </div>
         </div>
     </div>
-
     <div id="game-stage">
-        <div id="pointer-alert">
-            <b>🔒 MOUSE RESTRAINED:</b> Click the map or use the <b>ARROW KEYS</b> to turn around if your mouse cursor isn't locking properly.
-        </div>
+        <div id="pointer-alert"><b>🔒 MOUSE RESTRAINED:</b> Click the map or use the <b>ARROW KEYS</b> to turn around if your mouse cursor isn't locking properly.</div>
         <div id="crosshair"></div>
-        <div id="game-ui">
-            <h2 id="ui-username">Player</h2>
-            <p id="ui-controls-desc">WASD + Arrow Keys to Move/Look<br>Ctrl Sprint | Shift Sneak | F5 Camera</p>
-        </div>
-
+        <div id="game-ui"><h2 id="ui-username">Player</h2><p id="ui-controls-desc">WASD + Arrow Keys to Move/Look<br>Ctrl Sprint | Shift Sneak | F5 Camera</p></div>
         <div id="hotbar">
             <div class="hotbar-slot active" id="slot-1"><span class="hotbar-key">1</span><div class="slot-icon" style="background:#ffffff;"></div>SNOW</div>
             <div class="hotbar-slot" id="slot-2"><span class="hotbar-key">2</span><div class="slot-icon" style="background:#cd853f;"></div>PLANK</div>
@@ -436,639 +123,511 @@
             <div class="hotbar-slot" id="slot-4"><span class="hotbar-key">4</span><div class="slot-icon" style="background:#556b2f;"></div>GRASS</div>
             <div class="hotbar-slot" id="slot-5"><span class="hotbar-key">5</span><div class="slot-icon" style="background:#8b4513;"></div>DIRT</div>
         </div>
-
-        <div id="game-over-screen">
-            <h1 id="fail-title">LAVA ELIMINATION</h1>
-            <button class="action-btn" onclick="restartSpleefGame()">PLAY AGAIN</button>
-        </div>
+        <div id="game-over-screen"><h1 id="fail-title">LAVA ELIMINATION</h1><button class="action-btn" onclick="initSpleefWorld()">PLAY AGAIN</button><button class="exit-btn" onclick="exitToMainMenu()">EXIT GAME</button></div>
     </div>
-
     <script>
-        // --- POPUP LINKS ROUTING LOGIC ---
-        function toggleLinksModal(show) {
-            document.getElementById('links-overlay').style.display = show ? 'flex' : 'none';
-            if (!show) {
-                document.getElementById('extension-instructions').style.display = 'none';
-            }
-        }
-
-        function showExtensionGuide() {
-            document.getElementById('extension-instructions').style.display = 'block';
-        }
-
-        function handleOverlayClick(e) {
-            if (e.target === document.getElementById('links-overlay')) {
-                toggleLinksModal(false);
-            }
-        }
-
-        // --- GAMEMODE ROUTER ---
-        let currentActiveMode = 'spleef'; 
-
-        function selectMode(mode) {
-            currentActiveMode = mode;
-            document.getElementById('card-spleef').classList.remove('active');
-            document.getElementById('card-freebuild').classList.remove('active');
-            
-            if (mode === 'spleef') {
-                document.getElementById('card-spleef').classList.add('active');
-                document.getElementById('difficulty-box').style.display = 'block';
-            } else {
-                document.getElementById('card-freebuild').classList.add('active');
-                document.getElementById('difficulty-box').style.display = 'none';
-            }
-        }
-
-        // --- CUSTOM WEB AUDIO SYNTHESIZER ENGINE ---
+        function toggleLinksModal(show) { document.getElementById('links-overlay').style.display = show ? 'flex' : 'none'; if (!show) document.getElementById('extension-instructions').style.display = 'none'; }
+        function showExtensionGuide() { document.getElementById('extension-instructions').style.display = 'block'; }
+        function handleOverlayClick(e) { if (e.target === document.getElementById('links-overlay')) toggleLinksModal(false); }
+        let currentActiveMode = 'lava';
+        function selectMode(mode) { currentActiveMode = mode; ['lava','spleef','freebuild'].forEach(m => document.getElementById('card-'+m).classList.remove('active')); document.getElementById('card-'+mode).classList.add('active'); document.getElementById('difficulty-box').style.display = (mode === 'freebuild') ? 'none' : 'block'; }
         let audioCtx = null;
-        function initAudio() { if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } }
-
-        function playTone(type, startFreq, endFreq, duration, volume = 0.1) {
-            if (!audioCtx) return;
-            let osc = audioCtx.createOscillator();
-            let gainNode = audioCtx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(startFreq, audioCtx.currentTime);
-            if (endFreq !== startFreq) osc.frequency.exponentialRampToValueAtTime(endFreq, audioCtx.currentTime + duration);
-            gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-            osc.connect(gainNode); gainNode.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + duration);
-        }
-
+        function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+        function playTone(type, startFreq, endFreq, duration, volume = 0.1) { if (!audioCtx) return; let osc = audioCtx.createOscillator(), gainNode = audioCtx.createGain(); osc.type = type; osc.frequency.setValueAtTime(startFreq, audioCtx.currentTime); if (endFreq !== startFreq) osc.frequency.exponentialRampToValueAtTime(endFreq, audioCtx.currentTime + duration); gainNode.gain.setValueAtTime(volume, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration); osc.connect(gainNode); gainNode.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + duration); }
         function playJumpSound() { playTone('triangle', 150, 400, 0.15, 0.15); }
         function playFlySound() { playTone('sine', 300, 450, 0.12, 0.12); }
         function playBreakSound() { playTone('sawtooth', 120, 40, 0.08, 0.08); }
         function playBuildSound() { playTone('sine', 180, 260, 0.06, 0.2); }
         function playLavaSound() { playTone('sawtooth', 200, 20, 0.8, 0.3); }
-
-        // --- THREE.JS CONFIG & ASSETS ---
-        const skinMat = new THREE.MeshLambertMaterial({ color: 0xf5cba7 });
-        const hairMat = new THREE.MeshLambertMaterial({ color: 0x3e2723 });
-        const suitMat = new THREE.MeshLambertMaterial({ color: 0x555555 });
-        const pantsMat = new THREE.MeshLambertMaterial({ color: 0x212121 });
-        const whiteEyeMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
-        const pupilMat = new THREE.MeshLambertMaterial({ color: 0x000000 });
+        function playWarningSound() { playTone('sine', 600, 400, 0.2, 0.1); }
+        const skinMat = new THREE.MeshLambertMaterial({ color: 0xf5cba7 }), hairMat = new THREE.MeshLambertMaterial({ color: 0x3e2723 }), suitMat = new THREE.MeshLambertMaterial({ color: 0x555555 }), pantsMat = new THREE.MeshLambertMaterial({ color: 0x212121 }), whiteEyeMat = new THREE.MeshLambertMaterial({ color: 0xffffff }), pupilMat = new THREE.MeshLambertMaterial({ color: 0x000000 }), blockGeo = new THREE.BoxGeometry(1.98, 1.98, 1.98);
+        const materialsMap = { snow: new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0x222222 }), wood: new THREE.MeshLambertMaterial({ color: 0xcd853f }), log: new THREE.MeshLambertMaterial({ color: 0x8b5a2b }), grass: new THREE.MeshLambertMaterial({ color: 0x556b2f }), dirt: new THREE.MeshLambertMaterial({ color: 0x8b4513 }) };
+        const hotbarBlockTypes = ['snow', 'wood', 'log', 'grass', 'dirt']; let selectedBlockIndex = 0;
         
-        const blockGeo = new THREE.BoxGeometry(1.98, 1.98, 1.98);
-
-        const materialsMap = {
-            snow: new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0x222222 }),
-            wood: new THREE.MeshLambertMaterial({ color: 0xcd853f }),
-            log: new THREE.MeshLambertMaterial({ color: 0x8b5a2b }),
-            grass: new THREE.MeshLambertMaterial({ color: 0x556b2f }),
-            dirt: new THREE.MeshLambertMaterial({ color: 0x8b4513 })
-        };
-        const hotbarBlockTypes = ['snow', 'wood', 'log', 'grass', 'dirt'];
-        let selectedBlockIndex = 0; 
-
         function buildFullCharacterMesh(targetGroup, chosenStyle, customHairMat, customPupilMat, customSuitMat) {
-            const hMat = customHairMat || hairMat;
-            const pMat = customPupilMat || pupilMat;
-            const sMat = customSuitMat || suitMat;
-
-            const headJoint = new THREE.Group();
-            headJoint.position.y = 2.3; headJoint.name = "headJoint"; 
+            const hMat = customHairMat || hairMat, pMat = customPupilMat || pupilMat, sMat = customSuitMat || suitMat;
             
-            const headMesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), skinMat);
-            headJoint.add(headMesh);
-
+            const headJoint = new THREE.Group(); headJoint.position.y = 2.3; headJoint.name = "headJoint";
+            const headMesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), skinMat); headJoint.add(headMesh);
+            
             const torsoMesh = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 0.6), sMat); torsoMesh.position.y = 1.1;
-            const legsMesh = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.0, 0.5), pantsMat); legsMesh.position.y = 0.0;
-            targetGroup.add(headJoint, torsoMesh, legsMesh);
-
-            const leftWhite = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.12, 0.02), whiteEyeMat); leftWhite.position.set(-0.18, 0, -0.505);
-            const leftPupil = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.03), pMat); leftPupil.position.set(-0.18, 0, -0.51);
-            const rightWhite = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.12, 0.02), whiteEyeMat); rightWhite.position.set(0.18, 0, -0.505);
-            const rightPupil = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.03), pMat); rightPupil.position.set(0.18, 0, -0.51);
-            headJoint.add(leftWhite, leftPupil, rightWhite, rightPupil);
-
+            
+            const leftLegJoint = new THREE.Group(); leftLegJoint.position.set(-0.25, 0.5, 0); leftLegJoint.name = "leftLeg";
+            const leftLegMesh = new THREE.Mesh(new THREE.BoxGeometry(0.48, 1.0, 0.5), pantsMat); leftLegMesh.position.y = -0.5; leftLegJoint.add(leftLegMesh);
+            
+            const rightLegJoint = new THREE.Group(); rightLegJoint.position.set(0.25, 0.5, 0); rightLegJoint.name = "rightLeg";
+            const rightLegMesh = new THREE.Mesh(new THREE.BoxGeometry(0.48, 1.0, 0.5), pantsMat); rightLegMesh.position.y = -0.5; rightLegJoint.add(rightLegMesh);
+            
+            const leftArmJoint = new THREE.Group(); leftArmJoint.position.set(-0.8, 1.5, 0); leftArmJoint.name = "leftArm";
+            const leftArmMesh = new THREE.Mesh(new THREE.BoxGeometry(0.4, 1.0, 0.4), sMat); leftArmMesh.position.y = -0.4; leftArmJoint.add(leftArmMesh);
+            
+            const rightArmJoint = new THREE.Group(); rightArmJoint.position.set(0.8, 1.5, 0); rightArmJoint.name = "rightArm";
+            const rightArmMesh = new THREE.Mesh(new THREE.BoxGeometry(0.4, 1.0, 0.4), sMat); rightArmMesh.position.y = -0.4; rightArmJoint.add(rightArmMesh);
+            
+            targetGroup.add(headJoint, torsoMesh, leftLegJoint, rightLegJoint, leftArmJoint, rightArmJoint);
+            
+            let lW = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.12, 0.02), whiteEyeMat); lW.position.set(-0.18, 0, -0.505);
+            let lP = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.03), pMat); lP.position.set(-0.18, 0, -0.51);
+            let rW = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.12, 0.02), whiteEyeMat); rW.position.set(0.18, 0, -0.505);
+            let rP = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.03), pMat); rP.position.set(0.18, 0, -0.51);
+            headJoint.add(lW, lP, rW, rP); 
+            
             const hairGroup = new THREE.Group(); headMesh.add(hairGroup);
             if(chosenStyle === 'girl') {
-                const topCap = new THREE.Mesh(new THREE.BoxGeometry(1.06, 0.3, 1.06), hMat); topCap.position.set(0, 0.4, 0);
-                const bangs = new THREE.Mesh(new THREE.BoxGeometry(1.06, 0.2, 0.2), hMat); bangs.position.set(0, 0.25, -0.44); 
-                const sL = new THREE.Mesh(new THREE.BoxGeometry(0.05, 1.2, 1.06), hMat); sL.position.set(-0.51, -0.3, 0);
-                const sR = new THREE.Mesh(new THREE.BoxGeometry(0.05, 1.2, 1.06), hMat); sR.position.set(0.51, -0.3, 0);
-                hairGroup.add(topCap, bangs, sL, sR);
+                let tc = new THREE.Mesh(new THREE.BoxGeometry(1.06, 0.3, 1.06), hMat); tc.position.set(0, 0.4, 0);
+                let bg = new THREE.Mesh(new THREE.BoxGeometry(1.06, 0.2, 0.2), hMat); bg.position.set(0, 0.25, -0.44);
+                let sl = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.2, 1.06), hMat); sl.position.set(-0.54, -0.3, 0);
+                let sr = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.2, 1.06), hMat); sr.position.set(0.54, -0.3, 0);
+                let backHair = new THREE.Mesh(new THREE.BoxGeometry(1.02, 1.2, 0.15), hMat); backHair.position.set(0, -0.2, 0.48);
+                hairGroup.add(tc, bg, sl, sr, backHair);
             } else {
-                const step1 = new THREE.Mesh(new THREE.BoxGeometry(1.06, 0.2, 1.06), hMat); step1.position.set(0, 0.48, 0);
-                const step2 = new THREE.Mesh(new THREE.BoxGeometry(1.06, 0.2, 1.06), hMat); step2.position.set(0, 0.28, 0.02);
-                const step3 = new THREE.Mesh(new THREE.BoxGeometry(1.06, 0.2, 0.6), hMat); step3.position.set(0, 0.08, 0.25);
-                const step4 = new THREE.Mesh(new THREE.BoxGeometry(1.06, 0.15, 0.3), hMat); step4.position.set(0, -0.1, 0.4);
-                hairGroup.add(step1, step2, step3, step4);
+                let s1 = new THREE.Mesh(new THREE.BoxGeometry(1.06, 0.2, 1.06), hMat); s1.position.set(0, 0.48, 0);
+                let s2 = new THREE.Mesh(new THREE.BoxGeometry(1.06, 0.2, 1.06), hMat); s2.position.set(0, 0.28, 0.02);
+                let s3 = new THREE.Mesh(new THREE.BoxGeometry(1.06, 0.2, 0.6), hMat); s3.position.set(0, 0.08, 0.25);
+                let s4 = new THREE.Mesh(new THREE.BoxGeometry(1.06, 0.15, 0.3), hMat); s4.position.set(0, -0.1, 0.4);
+                hairGroup.add(s1, s2, s3, s4);
             }
         }
-
-        function createNametagSprite(nameString, labelColor) {
-            const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 128;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.65)'; ctx.fillRect(32, 24, 448, 80);
-            ctx.font = 'bold 24px "pixel-game", "Press Start 2P", sans-serif';
-            ctx.fillStyle = labelColor; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillText(nameString.toUpperCase(), 256, 64);
-            const texture = new THREE.CanvasTexture(canvas);
-            const spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true });
-            const sprite = new THREE.Sprite(spriteMat); sprite.scale.set(3.5, 0.875, 1); return sprite;
-        }
-
-        const adjectives = ["EPIC", "MEGA", "SHADOW", "NEON", "SWIFT", "FROST", "VOXEL", "HYPER"];
-        const nouns = ["KNIGHT", "NINJA", "BEAST", "RUNNER", "VIPER", "GHOST", "CRAFT", "GAMER"];
+        
+        function createNametagSprite(nameString, labelColor) { const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 128; const ctx = canvas.getContext('2d'); ctx.fillStyle = 'rgba(0, 0, 0, 0.65)'; ctx.fillRect(32, 24, 448, 80); ctx.font = 'bold 24px "pixel-game", "Press Start 2P", sans-serif'; ctx.fillStyle = labelColor; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(nameString.toUpperCase(), 256, 64); const texture = new THREE.CanvasTexture(canvas); const spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true }); const sprite = new THREE.Sprite(spriteMat); sprite.scale.set(3.5, 0.875, 1); return sprite; }
+        const adjectives = ["EPIC", "MEGA", "SHADOW", "NEON", "SWIFT", "FROST", "VOXEL", "HYPER"], nouns = ["KNIGHT", "NINJA", "BEAST", "RUNNER", "VIPER", "GHOST", "CRAFT", "GAMER"];
         function makeRandomUsername() { return adjectives[Math.floor(Math.random() * adjectives.length)] + nouns[Math.floor(Math.random() * nouns.length)] + Math.floor(100 + Math.random() * 899); }
-
-        function randomizeAll() {
-            document.getElementById("username-input").value = makeRandomUsername();
-            updateHairStyle(); updateEyeColor();
-        }
-
-        const container = document.getElementById('canvas3d');
-        const lobbyScene = new THREE.Scene();
-        const lobbyCamera = new THREE.PerspectiveCamera(45, 280 / 340, 0.1, 1000); lobbyCamera.position.set(0, 1.2, 4.6);
+        function randomizeAll() { document.getElementById("username-input").value = makeRandomUsername(); updateHairStyle(); updateEyeColor(); }
+        const container = document.getElementById('canvas3d'), lobbyScene = new THREE.Scene(), lobbyCamera = new THREE.PerspectiveCamera(45, 280 / 340, 0.1, 1000); lobbyCamera.position.set(0, 1.2, 4.6);
         const lobbyRenderer = new THREE.WebGLRenderer({ antialias: false }); lobbyRenderer.setSize(280, 340); container.appendChild(lobbyRenderer.domElement);
         const lobbyControls = new THREE.OrbitControls(lobbyCamera, lobbyRenderer.domElement); lobbyControls.enableZoom = true; lobbyControls.enablePan = false; lobbyControls.minDistance = 2.0; lobbyControls.maxDistance = 8.0; lobbyControls.target.set(0, 1.0, 0);
-        
-        const dLight = new THREE.DirectionalLight(0xffffff, 0.75); dLight.position.set(2, 4, 4);
-        lobbyScene.add(dLight, new THREE.AmbientLight(0x555555));
+        lobbyScene.add(new THREE.DirectionalLight(0xffffff, 0.75).translateOnAxis(new THREE.Vector3(2,4,4),1), new THREE.AmbientLight(0x555555));
         const previewGroup = new THREE.Group(); lobbyScene.add(previewGroup);
-
-        function updateHairStyle() {
-            while(previewGroup.children.length > 0) { previewGroup.remove(previewGroup.children[0]); }
-            buildFullCharacterMesh(previewGroup, document.getElementById('gender-select').value, hairMat, pupilMat, suitMat);
-            previewGroup.rotation.y = Math.PI; 
+        
+        function updateHairStyle() { 
+            while(previewGroup.children.length > 0) previewGroup.remove(previewGroup.children[0]); 
+            buildFullCharacterMesh(previewGroup, document.getElementById('gender-select').value, hairMat, pupilMat, suitMat); 
+            previewGroup.rotation.y = 0; 
         }
         function updateEyeColor() { pupilMat.color.set(document.getElementById('eye-select').value); }
         randomizeAll();
         function animLobby() { requestAnimationFrame(animLobby); lobbyControls.update(); lobbyRenderer.render(lobbyScene, lobbyCamera); }
         animLobby();
-
-        // --- CORE GAME ENGINE WORLD VARIABLES ---
-        let gameScene, gameCamera, gameRenderer;
-        let blocks = [];
-        let npcs = []; 
-        let isGameOver = false;
-        let selectedDifficulty = "medium";
-        const arenaSize = 21; 
-
-        let yaw = 0, pitch = 0;
-        const mouseSensitivity = 0.002, keyboardTurnSpeed = 0.035;
-
-        let playerPos = new THREE.Vector3(0, 5.0, 0); 
-        let playerVelocityY = 0;
-        let isPlayerOnGround = false;
-        let isFlying = false; 
-        let lastJumpTapTime = 0; 
-        const gravity = -0.012, jumpForce = 0.22, cameraEyeHeight = 1.8; 
-
-        let playerVisualGroup;
-        let isSprintingToggled = false, isThirdPerson = false;
-        let keys = { w:0, a:0, s:0, d:0, ' ':0, shift:0, arrowleft:0, arrowright:0, arrowup:0, arrowdown:0 };
-        let isLeftMouseDown = false; 
-
-        const raycaster = new THREE.Raycaster();
-        const centerMouse = new THREE.Vector2(0, 0);
+        
+        let gameScene, gameCamera, gameRenderer, blocks = [], npcs = [], regenQueue = [], isGameOver = false, selectedDifficulty = "medium", arenaSize = 21, animationFrameId = null, yaw = 0, pitch = 0, playerWalkTime = 0;
+        const mouseSensitivity = 0.002, keyboardTurnSpeed = 0.035, playerRadius = 0.5, playerHeight = 2.3, gravity = -0.012, jumpForce = 0.22, cameraEyeHeight = 1.8;
+        let playerPos = new THREE.Vector3(0, 5.0, 0), playerVelocityY = 0, isPlayerOnGround = false, isFlying = false, lastJumpTapTime = 0, playerVisualGroup, isSprintingToggled = false, isThirdPerson = false, keys = { w:0, a:0, s:0, d:0, ' ':0, shift:0, arrowleft:0, arrowright:0, arrowup:0, arrowdown:0 }, isLeftMouseDown = false, lavaDisolveTimer = 0, flashingBlocks = [];
+        const raycaster = new THREE.Raycaster(), centerMouse = new THREE.Vector2(0, 0);
+        
+        function exitToMainMenu() {
+            if(animationFrameId) cancelAnimationFrame(animationFrameId);
+            document.getElementById("game-stage").style.display = "none";
+            document.getElementById("lobby-screen").style.display = "flex";
+            try { document.exitPointerLock(); } catch(e){}
+        }
 
         function launchGame() {
-            initAudio();
-            selectedDifficulty = document.getElementById("difficulty-select").value;
-            const username = document.getElementById("username-input").value || "GAMER";
-            
-            if(currentActiveMode === 'spleef') {
-                document.getElementById("ui-username").innerText = "🏃 " + username.toUpperCase();
-                document.getElementById("ui-controls-desc").innerHTML = "WASD + Arrows to Move | F5 Camera<br>Hold Left Click to Break Blocks";
-                document.getElementById("hotbar").style.display = "none";
-                document.getElementById("fail-title").innerText = "LAVA ELIMINATION";
+            initAudio(); selectedDifficulty = document.getElementById("difficulty-select").value; const username = document.getElementById("username-input").value || "GAMER";
+            if(currentActiveMode === 'lava') {
+                document.getElementById("ui-username").innerText = "🌋 " + username.toUpperCase(); document.getElementById("ui-controls-desc").innerHTML = "WASD + Arrows to Move | F5 Camera<br>Keep climbing! Dissolved floor tiles regenerate in 20s!";
+                document.getElementById("hotbar").style.display = "none"; document.getElementById("fail-title").innerText = "MELTED IN LAVA";
+            } else if(currentActiveMode === 'spleef') {
+                document.getElementById("ui-username").innerText = "🏃 " + username.toUpperCase(); document.getElementById("ui-controls-desc").innerHTML = "WASD + Arrows to Move | F5 Camera<br>Hold Left Click to Break Blocks permanently";
+                document.getElementById("hotbar").style.display = "none"; document.getElementById("fail-title").innerText = "LAVA ELIMINATION";
             } else {
-                document.getElementById("ui-username").innerText = "🛠️ " + username.toUpperCase() + " (FREEBUILD)";
-                document.getElementById("ui-controls-desc").innerHTML = "WASD + Arrows to Move | F5 Camera<br>Double-Tap Space to Fly | Keys 1-5 to Swap Blocks<br>Hold Left Click: Break | Right Click: Place";
-                document.getElementById("hotbar").style.display = "flex";
-                document.getElementById("fail-title").innerText = "FELL OFF WORLD";
-                updateHotbarUI();
+                document.getElementById("ui-username").innerText = "🛠️ " + username.toUpperCase() + " (FREEBUILD)"; document.getElementById("ui-controls-desc").innerHTML = "WASD + Arrows to Move | F5 Camera<br>Double-Tap Space to Fly | Keys 1-5 to Swap Blocks<br>Hold Left Click: Break | Right Click: Place";
+                document.getElementById("hotbar").style.display = "flex"; document.getElementById("fail-title").innerText = "FELL OFF WORLD"; updateHotbarUI();
             }
-
-            document.getElementById("lobby-screen").style.display = "none";
-            document.getElementById("game-stage").style.display = "block";
-            document.getElementById("pointer-alert").style.display = "block";
-
-            const stage = document.getElementById("game-stage");
-            stage.requestPointerLock = stage.requestPointerLock || stage.mozRequestPointerLock;
-            setTimeout(() => { stage.requestPointerLock(); }, 300);
-
-            initSpleefWorld();
+            document.getElementById("lobby-screen").style.display = "none"; document.getElementById("game-stage").style.display = "block"; document.getElementById("pointer-alert").style.display = "block";
+            const stage = document.getElementById("game-stage"); stage.requestPointerLock = stage.requestPointerLock || stage.mozRequestPointerLock; setTimeout(() => { stage.requestPointerLock(); }, 300); initSpleefWorld();
         }
-
-        function updateHotbarUI() {
-            for(let i=1; i<=5; i++) {
-                document.getElementById("slot-"+i).classList.remove("active");
-            }
-            document.getElementById("slot-" + (selectedBlockIndex + 1)).classList.add("active");
+        function updateHotbarUI() { for(let i=1; i<=5; i++) document.getElementById("slot-"+i).classList.remove("active"); document.getElementById("slot-" + (selectedBlockIndex + 1)).classList.add("active"); }
+        
+        function queueBlockRegen(pos, material, isDisolvable) {
+            if (currentActiveMode !== 'lava') return;
+            regenQueue.push({ x: pos.x, y: pos.y, z: pos.z, material: material.clone(), isDisolvable: isDisolvable || false, timer: 20 });
         }
-
+        
         function initSpleefWorld() {
-            isGameOver = false; blocks = []; npcs = []; yaw = 0; pitch = 0;
-            isSprintingToggled = false; isThirdPerson = false; isFlying = false; isLeftMouseDown = false;
-            playerPos.set(0, 6.0, 0); playerVelocityY = 0; isPlayerOnGround = false;
-            document.getElementById("game-over-screen").style.display = "none";
-
-            gameScene = new THREE.Scene();
-            gameScene.background = new THREE.Color(0x0f141d);
-            gameScene.fog = new THREE.FogExp2(0x0f141d, 0.015);
-
-            gameCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            gameRenderer = new THREE.WebGLRenderer({ antialias: false });
-            gameRenderer.setSize(window.innerWidth, window.innerHeight);
+            if(animationFrameId) cancelAnimationFrame(animationFrameId);
+            isGameOver = false; blocks = []; npcs = []; regenQueue = []; yaw = 0; pitch = 0; isSprintingToggled = false; isThirdPerson = false; isFlying = false; isLeftMouseDown = false; lavaDisolveTimer = 0; flashingBlocks = []; playerPos.set(0, 6.0, 0); playerVelocityY = 0; isPlayerOnGround = false; playerWalkTime = 0; document.getElementById("game-over-screen").style.display = "none";
+            gameScene = new THREE.Scene(); gameScene.background = new THREE.Color(0x0f141d); gameScene.fog = new THREE.FogExp2(0x0f141d, 0.015);
+            gameCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000); gameRenderer = new THREE.WebGLRenderer({ antialias: false }); gameRenderer.setSize(window.innerWidth, window.innerHeight);
+            const cc = document.getElementById("game-stage"), oc = cc.querySelector('canvas'); if(oc) cc.removeChild(oc); cc.appendChild(gameRenderer.domElement);
+            let sun = new THREE.DirectionalLight(0xffffff, 0.85); sun.position.set(20, 50, 25); gameScene.add(new THREE.AmbientLight(0x777777), sun);
             
-            const canvasContainer = document.getElementById("game-stage");
-            const oldCanvas = canvasContainer.querySelector('canvas');
-            if(oldCanvas) canvasContainer.removeChild(oldCanvas);
-            canvasContainer.appendChild(gameRenderer.domElement);
-
-            const ambient = new THREE.AmbientLight(0x777777);
-            const sun = new THREE.DirectionalLight(0xffffff, 0.85); sun.position.set(20, 50, 25);
-            gameScene.add(ambient, sun);
-
-            playerVisualGroup = new THREE.Group();
-            const customPupil = new THREE.MeshLambertMaterial({ color: document.getElementById('eye-select').value });
-            buildFullCharacterMesh(playerVisualGroup, document.getElementById('gender-select').value, hairMat, customPupil, suitMat);
-            playerVisualGroup.scale.set(0.9, 0.9, 0.9);
-            gameScene.add(playerVisualGroup);
-
+            playerVisualGroup = new THREE.Group(); 
+            buildFullCharacterMesh(playerVisualGroup, document.getElementById('gender-select').value, hairMat, new THREE.MeshLambertMaterial({ color: document.getElementById('eye-select').value }), suitMat); 
+            playerVisualGroup.scale.set(0.9, 0.9, 0.9); gameScene.add(playerVisualGroup);
+            
             let half = Math.floor(arenaSize / 2);
+            if (currentActiveMode === 'lava') {
+                for(let x = -half; x <= half; x++) { for(let z = -half; z <= half; z++) { let tile = new THREE.Mesh(blockGeo, new THREE.MeshLambertMaterial({ color: 0xaaaaaa })); tile.position.set(x * 2, 2, z * 2); tile.isDisolvable = true; gameScene.add(tile); blocks.push(tile); } }
+                for(let i = 0; i < 40; i++) { let rx = Math.floor(Math.random() * arenaSize) - half, rz = Math.floor(Math.random() * arenaSize) - half, h = Math.floor(Math.random() * 4) + 2; for (let y = 0; y < h; y++) { let tb = new THREE.Mesh(blockGeo, new THREE.MeshLambertMaterial({ color: 0x555555 })); tb.position.set(rx * 2, 4 + (y * 2), rz * 2); tb.isDisolvable = false; gameScene.add(tb); blocks.push(tb); } }
+            } else if (currentActiveMode === 'spleef') {
+                const lc = [0xffffff, 0xddf2ff, 0x99ccff], le = [0x222222, 0x112233, 0x002244], yo = [2, -4, -10];
+                for (let l = 0; l < 3; l++) { let lm = new THREE.MeshLambertMaterial({ color: lc[l], emissive: le[l] }); for(let x = -half; x <= half; x++) { for(let z = -half; z <= half; z++) { let tile = new THREE.Mesh(blockGeo, lm); tile.position.set(x * 2, yo[l], z * 2); gameScene.add(tile); blocks.push(tile); } } }
+            } else {
+                let fH = Math.floor(31 / 2); for(let x = -fH; x <= fH; x++) { for(let z = -fH; z <= fH; z++) { let tile = new THREE.Mesh(blockGeo, materialsMap.grass); tile.position.set(x * 2, 0, z * 2); gameScene.add(tile); blocks.push(tile); } }
+            }
+            
+            let lavaBase = new THREE.Mesh(new THREE.BoxGeometry(200, 2, 200), new THREE.MeshLambertMaterial({ color: 0xff3300, emissive: 0x551100 }));
+            lavaBase.position.y = -16; gameScene.add(lavaBase);
 
-            if (currentActiveMode === 'spleef') {
-                const layerColors = [0xffffff, 0xddf2ff, 0x99ccff]; 
-                const layerEmissive = [0x222222, 0x112233, 0x002244];
-                const yOffsets = [2, -4, -10]; 
+            if (currentActiveMode === 'spleef' || currentActiveMode === 'lava') {
+                const rh = [0x3e2723, 0x1a0c00, 0xd7ccc8, 0xffb74d, 0xe0a96d], re = [0x1565c0, 0x2e7d32, 0x5d4037, 0x000000], rs = [0xe91e63, 0x9c27b0, 0x00e676, 0x3f51b5, 0x00bcd4];
+                for (let i = 0; i < 5; i++) {
+                    let ng = new THREE.Group(); 
+                    buildFullCharacterMesh(ng, Math.random() > 0.5 ? 'boy' : 'girl', new THREE.MeshLambertMaterial({ color: rh[Math.floor(Math.random() * rh.length)] }), new THREE.MeshLambertMaterial({ color: re[Math.floor(Math.random() * re.length)] }), new THREE.MeshLambertMaterial({ color: rs[Math.floor(Math.random() * rs.length)] }));
+                    let ns = createNametagSprite(makeRandomUsername(), currentActiveMode === 'spleef' ? (i < 2 ? '#00e5ff' : '#ff3d00') : '#ffffff'); ns.position.set(0, 3.2, 0); ng.add(ns); ng.scale.set(0.9, 0.9, 0.9);
+                    
+                    let sx, sz, farEnough, attempts = 0;
+                    do {
+                        sx = (Math.random() * (arenaSize - 2) - half) * 2;
+                        sz = (Math.random() * (arenaSize - 2) - half) * 2;
+                        farEnough = true;
+                        for(let existing of npcs) {
+                            let dist = Math.sqrt(Math.pow(sx - existing.mesh.position.x, 2) + Math.pow(sz - existing.mesh.position.z, 2));
+                            if(dist < 2.5) farEnough = false;
+                        }
+                        attempts++;
+                    } while(!farEnough && attempts < 30);
+                    
+                    ng.position.set(sx, 6.0, sz); gameScene.add(ng);
+                    npcs.push({ mesh: ng, velY: 0, targetX: sx, targetZ: sz, changeTimer: 0, walkTime: 0, alive: true, role: currentActiveMode === 'spleef' ? (i < 2 ? 'runner' : 'hunter') : 'wander' });
+                }
+            }
+            
+            let clock = new THREE.Clock();
+            function gameLoop() {
+                animationFrameId = requestAnimationFrame(gameLoop);
+                let dt = Math.min(clock.getDelta(), 0.1);
+                updatePhysics(dt);
+                renderGame();
+            }
+            gameLoop();
+        }
 
-                for (let layer = 0; layer < 3; layer++) {
-                    const layerMat = new THREE.MeshLambertMaterial({ color: layerColors[layer], emissive: layerEmissive[layer] });
-                    for(let x = -half; x <= half; x++) {
-                        for(let z = -half; z <= half; z++) {
-                            const tile = new THREE.Mesh(blockGeo, layerMat);
-                            tile.position.set(x * 2, yOffsets[layer], z * 2);
-                            gameScene.add(tile); blocks.push(tile);
+        function updatePhysics(dt) {
+            if(isGameOver) return;
+
+            if (keys.arrowleft) yaw += keyboardTurnSpeed;
+            if (keys.arrowright) yaw -= keyboardTurnSpeed;
+            if (keys.arrowup) pitch = Math.min(Math.PI/2.2, pitch + keyboardTurnSpeed);
+            if (keys.arrowdown) pitch = Math.max(-Math.PI/2.2, pitch - keyboardTurnSpeed);
+
+            let moveX = 0, moveZ = 0;
+            if (keys.w) { moveX -= Math.sin(yaw); moveZ -= Math.cos(yaw); }
+            if (keys.s) { moveX += Math.sin(yaw); moveZ += Math.cos(yaw); }
+            if (keys.a) { moveX -= Math.cos(yaw); moveZ += Math.sin(yaw); }
+            if (keys.d) { moveX += Math.cos(yaw); moveZ -= Math.sin(yaw); }
+
+            let moveLen = Math.sqrt(moveX * moveX + moveZ * moveZ);
+            let isSneaking = keys.shift && isPlayerOnGround && !isFlying;
+            let speed = isSneaking ? 0.05 : 0.11;
+            if (moveLen > 0) {
+                moveX /= moveLen; moveZ /= moveLen;
+                let prevX = playerPos.x, prevZ = playerPos.z;
+                playerPos.x += moveX * speed;
+                playerPos.z += moveZ * speed;
+
+                // Sneak: don't walk off edges
+                if (isSneaking) {
+                    let stillSupported = blocks.some(b =>
+                        Math.abs(b.position.x - playerPos.x) < 1.2 &&
+                        Math.abs(b.position.z - playerPos.z) < 1.2 &&
+                        playerPos.y - (b.position.y + 1.0) >= 0 &&
+                        playerPos.y - (b.position.y + 1.0) < 0.5
+                    );
+                    if (!stillSupported) { playerPos.x = prevX; playerPos.z = prevZ; }
+                }
+
+                // Side collision: push player out of blocks horizontally
+                for(let b of blocks) {
+                    let dx = playerPos.x - b.position.x, dz = playerPos.z - b.position.z;
+                    let adx = Math.abs(dx), adz = Math.abs(dz);
+                    if (adx < 1.49 && adz < 1.49) {
+                        let playerBottom = playerPos.y, playerTop = playerPos.y + playerHeight;
+                        let blockBottom = b.position.y - 1.0, blockTop = b.position.y + 1.0;
+                        if (playerBottom < blockTop - 0.05 && playerTop > blockBottom + 0.05) {
+                            let overlapX = 1.49 - adx, overlapZ = 1.49 - adz;
+                            if (overlapX < overlapZ) playerPos.x += dx > 0 ? overlapX : -overlapX;
+                            else playerPos.z += dz > 0 ? overlapZ : -overlapZ;
                         }
                     }
                 }
 
-                const randomHairColors = [0x3e2723, 0x1a0c00, 0xd7ccc8, 0xffb74d, 0xe0a96d];
-                const randomEyeColors = [0x1565c0, 0x2e7d32, 0x5d4037, 0x000000];
-                const randomSuitColors = [0xe91e63, 0x9c27b0, 0x00e676, 0x3f51b5, 0x00bcd4];
-
-                for (let i = 0; i < 5; i++) {
-                    const npcGroup = new THREE.Group();
-                    const nHairMat = new THREE.MeshLambertMaterial({ color: randomHairColors[Math.floor(Math.random() * randomHairColors.length)] });
-                    const nPupilMat = new THREE.MeshLambertMaterial({ color: randomEyeColors[Math.floor(Math.random() * randomEyeColors.length)] });
-                    const nSuitMat = new THREE.MeshLambertMaterial({ color: randomSuitColors[Math.floor(Math.random() * randomSuitColors.length)] });
-
-                    buildFullCharacterMesh(npcGroup, Math.random() > 0.5 ? 'boy' : 'girl', nHairMat, nPupilMat, nSuitMat);
-                    
-                    const nameSprite = createNametagSprite(makeRandomUsername(), "#ffffff");
-                    nameSprite.position.set(0, 3.2, 0); npcGroup.add(nameSprite);
-                    npcGroup.scale.set(0.9, 0.9, 0.9);
-
-                    let spawnX = (Math.random() * (arenaSize - 2) - half) * 2;
-                    let spawnZ = (Math.random() * (arenaSize - 2) - half) * 2;
-                    npcGroup.position.set(spawnX, 5.0, spawnZ); 
-                    gameScene.add(npcGroup);
-                    
-                    const walkDir = new THREE.Vector3((Math.random() - 0.5), 0, (Math.random() - 0.5)).normalize();
-                    npcGroup.lookAt(npcGroup.position.clone().add(walkDir)); npcGroup.rotateY(Math.PI); 
-
-                    npcs.push({
-                        mesh: npcGroup, dir: walkDir, changeDirTimer: 0,
-                        breakTimer: Math.random() * 10, velocityY: 0, isOnGround: true,
-                        personality: Math.random() > 0.4 ? 'hunter' : 'runaway', targetPitch: 0
-                    });
-                }
+                playerWalkTime += 10.0 * dt; // Properly scaled movement cycle rate using delta time
             } else {
-                const flatSize = 31; 
-                let fHalf = Math.floor(flatSize / 2);
-                for(let x = -fHalf; x <= fHalf; x++) {
-                    for(let z = -fHalf; z <= fHalf; z++) {
-                        const grassTile = new THREE.Mesh(blockGeo, materialsMap.grass);
-                        grassTile.position.set(x * 2, 0, z * 2);
-                        gameScene.add(grassTile); blocks.push(grassTile);
+                playerWalkTime = 0;
+            }
+
+            animateCharacterLimbs(playerVisualGroup, playerWalkTime);
+
+            if (isFlying) {
+                if (keys[' ']) playerPos.y += 0.12;
+                if (keys.shift) playerPos.y -= 0.12;
+            } else {
+                playerVelocityY += gravity;
+                playerPos.y += playerVelocityY;
+
+                isPlayerOnGround = false;
+                for(let b of blocks) {
+                    if (Math.abs(b.position.x - playerPos.x) < 1.4 && Math.abs(b.position.z - playerPos.z) < 1.4) {
+                        let topBound = b.position.y + 1.0;
+                        let bottomBound = b.position.y - 1.0;
+                        // Land on top
+                        if (playerVelocityY <= 0 && playerPos.y >= topBound - 0.4 && playerPos.y <= topBound + 0.2) {
+                            playerPos.y = topBound;
+                            playerVelocityY = 0;
+                            isPlayerOnGround = true;
+                            break;
+                        }
+                        // Hit head on bottom of block
+                        if (playerVelocityY > 0 && playerPos.y + playerHeight >= bottomBound && playerPos.y + playerHeight <= bottomBound + 0.4) {
+                            playerPos.y = bottomBound - playerHeight;
+                            playerVelocityY = 0;
+                        }
+                    }
+                }
+
+                if (isPlayerOnGround && keys[' ']) {
+                    playerVelocityY = jumpForce;
+                    isPlayerOnGround = false;
+                    playJumpSound();
+                }
+            }
+
+            playerVisualGroup.position.copy(playerPos);
+            playerVisualGroup.rotation.y = yaw;
+
+            if(isLeftMouseDown && currentActiveMode !== 'freebuild') {
+                performRaycastInteraction(true);
+            }
+
+            if(currentActiveMode === 'lava') {
+                lavaDisolveTimer += dt;
+                if(lavaDisolveTimer >= 4.5) {
+                    lavaDisolveTimer = 0;
+                    flashingBlocks.forEach(fb => {
+                        gameScene.remove(fb);
+                        blocks = blocks.filter(b => b !== fb);
+                        queueBlockRegen(fb.position, fb.oldMat || fb.material, fb.isDisolvable);
+                    });
+                    flashingBlocks = [];
+                    playWarningSound();
+                    
+                    let pickCount = selectedDifficulty === 'easy' ? 4 : selectedDifficulty === 'medium' ? 8 : 15;
+                    let targetTiles = blocks.filter(b => b.isDisolvable);
+                    for(let i=0; i<pickCount && targetTiles.length > 0; i++) {
+                        let idx = Math.floor(Math.random() * targetTiles.length);
+                        let chosen = targetTiles.splice(idx, 1)[0];
+                        chosen.oldMat = chosen.material;
+                        chosen.material = new THREE.MeshLambertMaterial({ color: 0xff3300, emissive: 0x330000 });
+                        flashingBlocks.push(chosen);
                     }
                 }
             }
 
-            const lavaGeo = new THREE.PlaneGeometry(550, 550);
-            const lavaMat = new THREE.MeshBasicMaterial({ color: currentActiveMode === 'freebuild' ? 0x050811 : 0xff2200, side: THREE.DoubleSide });
-            const lava = new THREE.Mesh(lavaGeo, lavaMat);
-            lava.rotation.x = Math.PI / 2; lava.position.y = -18;
-            gameScene.add(lava);
-
-            window.removeEventListener('keydown', handleKeyDown); window.addEventListener('keydown', handleKeyDown);
-            window.removeEventListener('keyup', handleKeyUp); window.addEventListener('keyup', handleKeyUp);
-            document.removeEventListener('mousemove', handleMouseMove); document.addEventListener('mousemove', handleMouseMove);
-            window.removeEventListener('resize', onWindowResize); window.addEventListener('resize', onWindowResize);
-            
-            window.removeEventListener('mousedown', handleMouseDown); window.addEventListener('mousedown', handleMouseDown);
-            window.removeEventListener('mouseup', handleMouseUp); window.addEventListener('mouseup', handleMouseUp);
-
-            runGameLoop();
-        }
-
-        function handleKeyDown(e) { 
-            let k = e.key.toLowerCase();
-            if(k === 'control') { e.preventDefault(); isSprintingToggled = !isSprintingToggled; }
-            else if(e.key === 'F5' || k === 'f5') { e.preventDefault(); isThirdPerson = !isThirdPerson; }
-            else if(['1','2','3','4','5'].includes(k) && currentActiveMode === 'freebuild') {
-                selectedBlockIndex = parseInt(k) - 1;
-                updateHotbarUI();
-            }
-            else if(e.key === ' ') {
-                if (currentActiveMode === 'freebuild') {
-                    let now = performance.now();
-                    if(now - lastJumpTapTime < 300) {
-                        isFlying = !isFlying;
-                        playerVelocityY = 0;
-                        playFlySound();
-                    }
-                    lastJumpTapTime = now;
+            regenQueue.forEach(rq => {
+                rq.timer -= dt;
+                if(rq.timer <= 0) {
+                    let rb = new THREE.Mesh(blockGeo, rq.material);
+                    rb.position.set(rq.x, rq.y, rq.z);
+                    rb.isDisolvable = rq.isDisolvable;
+                    gameScene.add(rb);
+                    blocks.push(rb);
                 }
-                keys[' '] = 1;
-            }
-            else if(k === 'shift') keys['shift'] = 1;
-            else if(k in keys) {
-                if(k.startsWith('arrow')) e.preventDefault();
-                keys[k] = 1; 
-            }
-        }
-        
-        function handleKeyUp(e) { 
-            let k = e.key.toLowerCase();
-            if(k === 'shift') keys['shift'] = 0;
-            else if(k in keys || e.key === ' ') keys[e.key === ' ' ? ' ' : k] = 0; 
-        }
+            });
+            regenQueue = regenQueue.filter(rq => rq.timer > 0);
 
-        function handleMouseMove(e) {
-            if (document.pointerLockElement !== document.getElementById("game-stage") || isGameOver) return;
-            yaw -= e.movementX * mouseSensitivity;
-            pitch -= e.movementY * mouseSensitivity;
-            pitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, pitch));
-        }
+            npcs.forEach(bot => {
+                if(!bot.alive) return;
+                bot.changeTimer -= dt;
 
-        function handleMouseDown(e) {
-            if(document.pointerLockElement !== document.getElementById("game-stage")) {
-                if(document.getElementById('links-overlay').style.display === 'flex') return;
+                let botSpeed = selectedDifficulty === 'easy' ? 0.03 : selectedDifficulty === 'medium' ? 0.05 : 0.08;
+
+                if(currentActiveMode === 'spleef') {
+                    if(bot.role === 'hunter') {
+                        botSpeed *= 1.2;
+                        if(bot.changeTimer <= 0) {
+                            // Lock onto nearest target: player or other alive bots
+                            let bestX = playerPos.x, bestZ = playerPos.z;
+                            let bestDist = (playerPos.x - bot.mesh.position.x)**2 + (playerPos.z - bot.mesh.position.z)**2;
+                            npcs.forEach(other => {
+                                if(other === bot || !other.alive) return;
+                                let d = (other.mesh.position.x - bot.mesh.position.x)**2 + (other.mesh.position.z - bot.mesh.position.z)**2;
+                                if(d < bestDist) { bestDist = d; bestX = other.mesh.position.x; bestZ = other.mesh.position.z; }
+                            });
+                            bot.targetX = bestX; bot.targetZ = bestZ;
+                            bot.changeTimer = 0.2 + Math.random() * 0.4;
+                        }
+                        // Aggressively break blocks under the target
+                        let breakChance = selectedDifficulty === 'easy' ? 0.004 : selectedDifficulty === 'medium' ? 0.012 : 0.025;
+                        if(Math.random() < breakChance) {
+                            let near = blocks.filter(b => Math.abs(b.position.x - bot.targetX) < 3 && Math.abs(b.position.z - bot.targetZ) < 3);
+                            if(near.length) { let t = near[Math.floor(Math.random()*near.length)]; gameScene.remove(t); blocks = blocks.filter(b=>b!==t); playBreakSound(); }
+                        }
+                    } else { // runner
+                        botSpeed *= 0.9;
+                        if(bot.changeTimer <= 0) {
+                            // Find nearest threat and run the opposite direction
+                            let nearestDist = Infinity, nx = playerPos.x, nz = playerPos.z;
+                            let check = (tx, tz) => { let d=(tx-bot.mesh.position.x)**2+(tz-bot.mesh.position.z)**2; if(d<nearestDist){nearestDist=d;nx=tx;nz=tz;} };
+                            check(playerPos.x, playerPos.z);
+                            npcs.forEach(other => { if(other!==bot && other.alive) check(other.mesh.position.x, other.mesh.position.z); });
+                            let awayX = bot.mesh.position.x - nx, awayZ = bot.mesh.position.z - nz;
+                            let len = Math.sqrt(awayX*awayX + awayZ*awayZ) || 1;
+                            bot.targetX = bot.mesh.position.x + (awayX/len)*7;
+                            bot.targetZ = bot.mesh.position.z + (awayZ/len)*7;
+                            bot.changeTimer = 0.4 + Math.random() * 0.8;
+                        }
+                        // Break blocks near themselves to leave unsafe terrain behind
+                        let breakChance = selectedDifficulty === 'easy' ? 0.002 : selectedDifficulty === 'medium' ? 0.005 : 0.01;
+                        if(Math.random() < breakChance) {
+                            let near = blocks.filter(b => Math.abs(b.position.x - bot.mesh.position.x) < 3 && Math.abs(b.position.z - bot.mesh.position.z) < 3);
+                            if(near.length) { let t = near[Math.floor(Math.random()*near.length)]; gameScene.remove(t); blocks = blocks.filter(b=>b!==t); playBreakSound(); }
+                        }
+                    }
+                } else {
+                    // Lava / other modes: original random wander
+                    if(bot.changeTimer <= 0) {
+                        let r = 8;
+                        bot.targetX = bot.mesh.position.x + (Math.random() * r - r/2);
+                        bot.targetZ = bot.mesh.position.z + (Math.random() * r - r/2);
+                        bot.changeTimer = Math.random() * 3 + 1;
+                    }
+                }
+
+                let dx = bot.targetX - bot.mesh.position.x;
+                let dz = bot.targetZ - bot.mesh.position.z;
+                let dist = Math.sqrt(dx*dx + dz*dz);
+
+                if(dist > 0.3) {
+                    dx /= dist; dz /= dist;
+                    bot.mesh.position.x += dx * botSpeed;
+                    bot.mesh.position.z += dz * botSpeed;
+                    bot.mesh.rotation.y = Math.atan2(dx, dz) + Math.PI;
+                    bot.walkTime += 10.0 * dt;
+                } else {
+                    bot.walkTime = 0;
+                }
+
+                animateCharacterLimbs(bot.mesh, bot.walkTime);
+
+                bot.velY += gravity;
+                bot.mesh.position.y += bot.velY;
+                let onG = false;
+                for(let b of blocks) {
+                    if(Math.abs(b.position.x - bot.mesh.position.x) < 1.4 && Math.abs(b.position.z - bot.mesh.position.z) < 1.4) {
+                        let tb = b.position.y + 1.0;
+                        if(bot.mesh.position.y >= tb - 0.4 && bot.mesh.position.y + bot.velY <= tb) {
+                            bot.mesh.position.y = tb;
+                            bot.velY = 0;
+                            onG = true;
+                            break;
+                        }
+                    }
+                }
                 
-                if(!isGameOver && document.getElementById("game-stage").style.display === "block") {
-                    document.getElementById("game-stage").requestPointerLock();
+                if (bot.mesh.position.y < -14) {
+                    bot.alive = false;
+                    gameScene.remove(bot.mesh);
                 }
-                return;
+            });
+
+            if (playerPos.y < -14) {
+                isGameOver = true;
+                document.getElementById("game-over-screen").style.display = "flex";
+                playLavaSound();
             }
-            if(isGameOver) return;
+        }
 
-            if(e.button === 0) {
-                isLeftMouseDown = true; 
-            } else if(e.button === 2 && currentActiveMode === 'freebuild') {
-                raycaster.setFromCamera(centerMouse, gameCamera);
-                raycaster.far = 16; 
-                const intersects = raycaster.intersectObjects(blocks);
-                if(intersects.length > 0) {
-                    const targetBlock = intersects[0].object;
-                    const normal = intersects[0].face.normal.clone();
-                    
-                    let buildX = targetBlock.position.x + (normal.x * 2);
-                    let buildY = targetBlock.position.y + (normal.y * 2);
-                    let buildZ = targetBlock.position.z + (normal.z * 2);
+        function animateCharacterLimbs(group, walkTime) {
+            let lLeg = group.getObjectByName("leftLeg");
+            let rLeg = group.getObjectByName("rightLeg");
+            let lArm = group.getObjectByName("leftArm");
+            let rArm = group.getObjectByName("rightArm");
 
-                    let distToPlayer = playerPos.distanceTo(new THREE.Vector3(buildX, playerPos.y, buildZ));
-                    if(distToPlayer < 1.2 && Math.abs(buildY - playerPos.y) < 1.5) return;
+            if(walkTime > 0) {
+                let angle = Math.sin(walkTime) * 0.6;
+                if(lLeg) lLeg.rotation.x = angle;
+                if(rLeg) rLeg.rotation.x = -angle;
+                if(lArm) lArm.rotation.x = -angle * 0.8;
+                if(rArm) rArm.rotation.x = angle * 0.8;
+            } else {
+                if(lLeg) lLeg.rotation.x = 0;
+                if(rLeg) rLeg.rotation.x = 0;
+                if(lArm) lArm.rotation.x = 0;
+                if(rArm) rArm.rotation.x = 0;
+            }
+        }
 
-                    const activeMatName = hotbarBlockTypes[selectedBlockIndex];
-                    const activeMat = materialsMap[activeMatName];
-                    
-                    const newBlock = new THREE.Mesh(blockGeo, activeMat);
-                    newBlock.position.set(buildX, buildY, buildZ);
-                    gameScene.add(newBlock);
-                    blocks.push(newBlock);
+        function performRaycastInteraction(isDestroy) {
+            raycaster.setFromCamera(centerMouse, gameCamera);
+            const intersects = raycaster.intersectObjects(blocks);
+            if(intersects.length > 0 && intersects[0].distance < 12) {
+                let hitObj = intersects[0].object;
+                if(isDestroy) {
+                    if(currentActiveMode === 'lava') return; 
+                    playBreakSound();
+                    queueBlockRegen(hitObj.position, hitObj.material, hitObj.isDisolvable);
+                    gameScene.remove(hitObj);
+                    blocks = blocks.filter(b => b !== hitObj);
+                } else {
+                    let normal = intersects[0].face.normal;
+                    let newPos = hitObj.position.clone().add(normal.clone().multiplyScalar(2));
+                    let type = hotbarBlockTypes[selectedBlockIndex];
+                    let nb = new THREE.Mesh(blockGeo, materialsMap[type]);
+                    nb.position.copy(newPos);
+                    gameScene.add(nb);
+                    blocks.push(nb);
                     playBuildSound();
                 }
             }
         }
 
-        function handleMouseUp(e) {
-            if(e.button === 0) {
-                isLeftMouseDown = false;
-            }
-        }
-
-        window.addEventListener('contextmenu', e => e.preventDefault());
-
-        function onWindowResize() {
-            gameCamera.aspect = window.innerWidth / window.innerHeight;
-            gameCamera.updateProjectionMatrix();
-            gameRenderer.setSize(window.innerWidth, window.innerHeight);
-        }
-
-        function runGameLoop() {
-            if (isGameOver) return;
-            requestAnimationFrame(runGameLoop);
-
-            if (keys.arrowleft) yaw += keyboardTurnSpeed;
-            if (keys.arrowright) yaw -= keyboardTurnSpeed;
-            if (keys.arrowup) pitch += keyboardTurnSpeed * 0.7;
-            if (keys.arrowdown) pitch -= keyboardTurnSpeed * 0.7;
-            pitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, pitch));
-
-            if (isLeftMouseDown && document.pointerLockElement === document.getElementById("game-stage")) {
-                raycaster.setFromCamera(centerMouse, gameCamera);
-                raycaster.far = 16; 
-                const intersects = raycaster.intersectObjects(blocks);
-                if(intersects.length > 0) {
-                    const targetedTile = intersects[0].object;
-                    gameScene.remove(targetedTile);
-                    blocks = blocks.filter(b => b !== targetedTile);
-                    playBreakSound();
-                }
-            }
-
-            let currentMoveSpeed = isFlying ? 0.16 : 0.08; 
-            if (isSprintingToggled) currentMoveSpeed *= 1.5; 
-            else if (keys.shift && !isFlying) currentMoveSpeed = 0.038; 
-
-            const forward = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
-            const right = new THREE.Vector3(1, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
-
-            let moveDir = new THREE.Vector3();
-            if (keys.w) moveDir.add(forward); if (keys.s) moveDir.add(forward.clone().negate());
-            if (keys.d) moveDir.add(right); if (keys.a) moveDir.add(right.clone().negate());
-            
-            if (moveDir.lengthSq() > 0) {
-                moveDir.normalize();
-                let nextPos = playerPos.clone().addScaledVector(moveDir, currentMoveSpeed);
-
-                if (keys.shift && isPlayerOnGround && !isFlying) {
-                    let nextTileValid = false;
-                    for (let b of blocks) {
-                        if (Math.abs(b.position.x - nextPos.x) < 1.05 && Math.abs(b.position.z - nextPos.z) < 1.05) {
-                            if (Math.abs((b.position.y + 1.0) - playerPos.y) < 0.2) { nextTileValid = true; break; }
-                        }
-                    }
-                    if (nextTileValid) playerPos.copy(nextPos);
-                } else {
-                    playerPos.copy(nextPos);
-                }
-            }
-
-            if (isFlying) {
-                let flyVerticalSpeed = 0.12;
-                if (keys[' ']) playerPos.y += flyVerticalSpeed;
-                if (keys['shift']) playerPos.y -= flyVerticalSpeed;
-                playerVelocityY = 0;
+        function renderGame() {
+            if(!gameScene || !gameCamera || !gameRenderer) return;
+            let isSneaking = keys.shift && isPlayerOnGround && !isFlying;
+            let eyeH = cameraEyeHeight - (isSneaking ? 0.4 : 0);
+            if(isThirdPerson) {
+                let d = 5;
+                let hDist = Math.cos(pitch) * d;
+                gameCamera.position.set(
+                    playerPos.x + Math.sin(yaw) * hDist,
+                    playerPos.y + eyeH - Math.sin(pitch) * d,
+                    playerPos.z + Math.cos(yaw) * hDist
+                );
+                gameCamera.lookAt(playerPos.x, playerPos.y + eyeH, playerPos.z);
+                playerVisualGroup.visible = true;
             } else {
-                playerVelocityY += gravity; 
-                playerPos.y += playerVelocityY;
+                gameCamera.position.set(playerPos.x, playerPos.y + eyeH, playerPos.z);
+                gameCamera.rotation.set(pitch, yaw, 0, 'YXZ');
+                playerVisualGroup.visible = false;
             }
-
-            let standingOnTile = false; let currentFloorY = -30; 
-
-            for(let b of blocks) {
-                if(Math.abs(b.position.x - playerPos.x) < 1.1 && Math.abs(b.position.z - playerPos.z) < 1.1) {
-                    let surfaceHeight = b.position.y + 1.0; 
-                    if (playerPos.y >= surfaceHeight - 0.35 && playerPos.y + playerVelocityY <= surfaceHeight + 0.15) {
-                        if (surfaceHeight > currentFloorY) { currentFloorY = surfaceHeight; standingOnTile = true; }
-                    }
-                }
-            }
-
-            if(standingOnTile && playerVelocityY <= 0) {
-                playerPos.y = currentFloorY; 
-                playerVelocityY = 0; 
-                isPlayerOnGround = true;
-                if (isFlying) isFlying = false; 
-            } else { 
-                isPlayerOnGround = false; 
-            }
-
-            if (keys[' '] && isPlayerOnGround && !isFlying) { playerVelocityY = jumpForce; isPlayerOnGround = false; playJumpSound(); }
-
-            if(playerPos.y < -16.0) {
-                isGameOver = true; if(currentActiveMode === 'spleef') playLavaSound();
-                document.exitPointerLock(); document.getElementById("game-over-screen").style.display = "flex";
-            }
-
-            playerVisualGroup.position.copy(playerPos); playerVisualGroup.rotation.y = yaw; playerVisualGroup.visible = isThirdPerson;
-            const playerHead = playerVisualGroup.getObjectByName("headJoint");
-            if (playerHead) playerHead.rotation.x = pitch; 
-
-            if(currentActiveMode === 'spleef') {
-                for(let i = npcs.length - 1; i >= 0; i--) {
-                    let npc = npcs[i]; npc.velocityY += gravity; npc.mesh.position.y += npc.velocityY;
-                    let npcFloorY = -20; let npcStandingValid = false;
-
-                    for(let b of blocks) {
-                        if(Math.abs(b.position.x - npc.mesh.position.x) < 1.1 && Math.abs(b.position.z - npc.mesh.position.z) < 1.1) {
-                            let surfY = b.position.y + 1.0; 
-                            if (npc.mesh.position.y >= surfY - 0.35 && npc.mesh.position.y + npc.velocityY <= surfY + 0.15) {
-                                if (surfY > npcFloorY) { npcFloorY = surfY; npcStandingValid = true; }
-                            }
-                        }
-                    }
-
-                    if(npcStandingValid && npc.velocityY <= 0) { npc.mesh.position.y = npcFloorY; npc.velocityY = 0; npc.isOnGround = true; }
-                    else { npc.isOnGround = false; }
-
-                    let distanceToPlayer = npc.mesh.position.distanceTo(playerPos);
-                    let heightDiff = Math.abs(npc.mesh.position.y - playerPos.y);
-                    let trackRange = selectedDifficulty === "hardcore" ? 28 : (selectedDifficulty === "medium" ? 24 : 16);
-                    let isTrackingActive = (heightDiff < 8.0 && distanceToPlayer < trackRange);
-
-                    if (isTrackingActive) {
-                        if (npc.personality === 'hunter') { npc.dir.copy(playerPos).sub(npc.mesh.position); }
-                        else { npc.dir.copy(npc.mesh.position).sub(playerPos); }
-                        let horizontalDist = Math.sqrt(npc.dir.x * npc.dir.x + npc.dir.z * npc.dir.z);
-                        npc.targetPitch = Math.atan2(playerPos.y - npc.mesh.position.y, horizontalDist);
-                        npc.dir.y = 0; npc.dir.normalize();
-                    } else {
-                        npc.targetPitch = 0; npc.changeDirTimer++;
-                        let routeRate = selectedDifficulty === "hardcore" ? 60 : 120;
-                        if(npc.changeDirTimer > routeRate) { npc.dir.set((Math.random() - 0.5), 0, (Math.random() - 0.5)).normalize(); npc.changeDirTimer = 0; }
-                    }
-
-                    if (npc.dir.lengthSq() > 0) { npc.mesh.lookAt(npc.mesh.position.clone().add(npc.dir)); npc.mesh.rotateY(Math.PI); }
-                    const botHead = npc.mesh.getObjectByName("headJoint");
-                    if (botHead) botHead.rotation.x += (npc.targetPitch - botHead.rotation.x) * 0.1;
-
-                    let checkAheadX = npc.mesh.position.x + (npc.dir.x * 1.8);
-                    let checkAheadZ = npc.mesh.position.z + (npc.dir.z * 1.8);
-                    let tileAheadExists = false;
-                    for(let b of blocks) {
-                        if(Math.abs(b.position.y + 1.0 - npc.mesh.position.y) < 0.6) {
-                            if(Math.abs(b.position.x - checkAheadX) < 1.1 && Math.abs(b.position.z - checkAheadZ) < 1.1) { tileAheadExists = true; break; }
-                        }
-                    }
-
-                    if (!tileAheadExists && npc.isOnGround) {
-                        let leapGap = selectedDifficulty === "easy" ? 3.4 : 3.6;
-                        let leapTargetX = npc.mesh.position.x + (npc.dir.x * leapGap);
-                        let leapTargetZ = npc.mesh.position.z + (npc.dir.z * leapGap);
-                        let landableTileExists = false;
-
-                        for(let b of blocks) {
-                            if(Math.abs(b.position.y + 1.0 - npc.mesh.position.y) < 0.6) {
-                                if(Math.abs(b.position.x - leapTargetX) < 1.1 && Math.abs(b.position.z - leapTargetZ) < 1.1) { landableTileExists = true; break; }
-                            }
-                        }
-
-                        if (landableTileExists) { npc.velocityY = jumpForce * (selectedDifficulty === "hardcore" ? 1.05 : 1.0); npc.isOnGround = false; }
-                        else { npc.dir.set((Math.random() - 0.5), 0, (Math.random() - 0.5)).normalize(); }
-                    }
-                    
-                    let movementVelocityFactor = selectedDifficulty === "hardcore" ? (isTrackingActive ? 0.085 : 0.06) : (isTrackingActive ? 0.055 : 0.045);
-                    npc.mesh.position.addScaledVector(npc.dir, movementVelocityFactor);
-
-                    npc.breakTimer++;
-                    let mineTickRate = selectedDifficulty === "hardcore" ? 12 : 22;
-                    if (npc.breakTimer > mineTickRate) { 
-                        let mineTargetX = npc.mesh.position.x + (npc.dir.x * 2.2); let mineTargetZ = npc.mesh.position.z + (npc.dir.z * 2.2);
-                        if (selectedDifficulty === "hardcore" && distanceToPlayer < 3.5 && heightDiff < 1.0) { mineTargetX = playerPos.x; mineTargetZ = playerPos.z; }
-
-                        let targetBlock = null;
-                        for(let b of blocks) {
-                            if(Math.abs(b.position.y + 1.0 - npc.mesh.position.y) < 1.5) {
-                                if(Math.abs(b.position.x - mineTargetX) < 1.1 && Math.abs(b.position.z - mineTargetZ) < 1.1) { targetBlock = b; break; }
-                            }
-                        }
-                        if (targetBlock) { gameScene.remove(targetBlock); blocks = blocks.filter(b => b !== targetBlock); if (distanceToPlayer < 15) playBreakSound(); }
-                        npc.breakTimer = 0;
-                    }
-
-                    if(npc.mesh.position.y < -15.0) { gameScene.remove(npc.mesh); npcs.splice(i, 1); }
-                }
-            }
-
-            if (!isThirdPerson) {
-                gameCamera.position.copy(playerPos); gameCamera.position.y += cameraEyeHeight; 
-                const targetLook = new THREE.Vector3(0, 0, -1);
-                targetLook.applyAxisAngle(new THREE.Vector3(1, 0, 0), pitch); targetLook.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
-                targetLook.add(gameCamera.position); gameCamera.lookAt(targetLook);
-            } else {
-                const backwardCamVector = new THREE.Vector3(0, 0, 1);
-                backwardCamVector.applyAxisAngle(new THREE.Vector3(1, 0, 0), pitch); backwardCamVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
-                gameCamera.position.copy(playerPos).addScaledVector(backwardCamVector, 4.5); gameCamera.position.y += cameraEyeHeight + 0.5; 
-                const focusPoint = playerPos.clone(); focusPoint.y += cameraEyeHeight - 0.3; gameCamera.lookAt(focusPoint);
-            }
-            
             gameRenderer.render(gameScene, gameCamera);
         }
 
-        function restartSpleefGame() {
-            initSpleefWorld();
-            document.getElementById("game-stage").requestPointerLock();
-        }
-
-        // STEP 3: Registering the dynamic inline Service Worker configuration to finalize PWA status
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                const swCode = "self.addEventListener('fetch', function(e) { /* Passthrough */ });";
-                const blob = new Blob([swCode], { type: 'application/javascript' });
-                navigator.serviceWorker.register(URL.createObjectURL(blob))
-                    .then(reg => console.log('PWA Service Worker Registered!'))
-                    .catch(err => console.log('Service Worker Setup Error: ', err));
-            });
-        }
+        window.addEventListener('keydown', e => {
+            let k = e.key.toLowerCase();
+            if(k in keys) keys[k] = 1;
+            if(e.key === ' ') {
+                let now = performance.now();
+                if(now - lastJumpTapTime < 250 && currentActiveMode === 'freebuild') { isFlying = !isFlying; playerVelocityY = 0; playFlySound(); }
+                lastJumpTapTime = now;
+            }
+            if(e.key === 'F5' || e.key === 'f5') { e.preventDefault(); isThirdPerson = !isThirdPerson; }
+            if(k >= '1' && k <= '5' && currentActiveMode === 'freebuild') { selectedBlockIndex = parseInt(k) - 1; updateHotbarUI(); }
+        });
+        window.addEventListener('keyup', e => { let k = e.key.toLowerCase(); if(k in keys) keys[k] = 0; });
+        document.addEventListener('pointerlockchange', () => { document.getElementById("pointer-alert").style.display = document.pointerLockElement ? "none" : "block"; });
+        window.addEventListener('mousemove', e => { if(document.pointerLockElement) { yaw -= e.movementX * mouseSensitivity; pitch -= e.movementY * mouseSensitivity; pitch = Math.max(-Math.PI/2.2, Math.min(Math.PI/2.2, pitch)); } });
+        window.addEventListener('mousedown', e => {
+            if(!document.pointerLockElement) return;
+            if(e.button === 0) {
+                isLeftMouseDown = true;
+                performRaycastInteraction(true);
+            } else if(e.button === 2 && currentActiveMode === 'freebuild') {
+                performRaycastInteraction(false);
+            }
+        });
+        window.addEventListener('mouseup', e => { if(e.button === 0) isLeftMouseDown = false; });
     </script>
 </body>
 </html>
